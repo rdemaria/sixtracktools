@@ -94,8 +94,8 @@ class Variable(object):
 class SixTrackInput(object):
   classes=dict(
     drift=namedtuple('drift','length'),
-    mult =namedtuple('multipole','knl ksl hxl hyl length'),
-    cav  =namedtuple('cavity','volt freq lag'),
+    multipole=namedtuple('multipole','knl ksl hxl hyl length'),
+    cavity =namedtuple('cavity','volt freq lag'),
     align=namedtuple('align','dx dy tilt'),
     block=namedtuple('block','elems'),
   )
@@ -869,12 +869,13 @@ class SixTrackInput(object):
         else:
           yield el
   def expand_struct(self,convert=classes):
-      out=[]
+      elems=[]
       count={}
+      names=[]
       rest=[]
       drift=convert['drift']
-      mult =convert['mult']
-      cav  =convert['cav']
+      multipole=convert['multipole']
+      cavity  =convert['cavity']
       align=convert['align']
       block=convert['block']
       for nnn in self.iter_struct():
@@ -889,7 +890,7 @@ class SixTrackInput(object):
               knl=[0]*(nn-1)+[madval]; ksl=[0]*nn
               if sign==1:
                  knl,ksl=ksl,knl
-              elem=mult(knl,ksl,0,0,0)
+              elem=multipole(knl,ksl,0,0,0)
           elif etype==11:
               knl,ksl=self.get_knl(nnn,ccc)
               hxl=0; hyl=0;l=0
@@ -899,13 +900,13 @@ class SixTrackInput(object):
               elif d3==-2:
                   hyl=d1; l=d2
                   ksl[0]=hxl
-              elem=mult(knl,ksl,hxl,hyl,l)
+              elem=multipole(knl,ksl,hxl,hyl,l)
           elif etype==12:
               e0=self.initialconditions[-1]
               p0c=np.sqrt(e0**2-self.pma**2)
               beta0=p0c/e0
               v=d1; freq=d2
-              elem=cav(v,freq,lag=180-d3)
+              elem=cavity(v,freq,lag=180-d3)
           else:
               rest.append([nnn]+self.single[nnn])
           if elem is not None:
@@ -914,14 +915,19 @@ class SixTrackInput(object):
               tilt=tilt*180e-3/pi
               dx*=1e-3;
               dy*=1e-3;
-              out.append([nnn,ccc,align(-dx,-dy,-tilt)])
-              out.append([nnn,ccc,elem])
-              out.append([nnn,ccc,align(dx,dy,tilt)])
+              names.append(nnn+'_alignpre')
+              elems.append(align(-dx,-dy,-tilt))
+              names.append(nnn)
+              elems.append(elem)
+              names.append(nnn+'_alignpost')
+              elems.append(align(dx,dy,tilt))
             else:
-              out.append([nnn,ccc,elem])
+              elems.append(elem)
+              names.append(nnn)
           count[nnn]=ccc+1
-      return out,rest
-
+      newelems=[dict(i._asdict()) for i in elems]
+      types=[i.__class__.__name__ for i in elems]
+      return zip(names,types,newelems),rest
 
 
 

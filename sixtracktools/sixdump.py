@@ -63,12 +63,15 @@ class SixDump3(object):
     tau   =property(lambda p: p.sigma*p.beta0)
     mass  =property(lambda p: p.mass0)
     charge=property(lambda p: 1)
+    charge0=property(lambda p: 1)
     qratio=property(lambda p: p.charge/p.charge0)
     mratio=property(lambda p: p.mass/p.mass0)
     state =property(lambda p: 0)
-    chi   =property(lambda p: qratio/mratio)
+    chi   =property(lambda p: p.qratio/p.mratio)
     gamma0=property(lambda p: p.energy0/p.mass0)
     beta0 =property(lambda p: p.p0c/p.energy0)
+    gamma=property(lambda p: p.energy/p.mass)
+    beta =property(lambda p: p.pc/p.energy)
     def __getattr__(self,k):
         return self.particles[k]
     def __dir__(self):
@@ -85,10 +88,10 @@ class SixDump3(object):
         return out
     def get_minimal_beam(self):
         out={}
-        names ='s x px y py tau ptau delta'.split()
-        names ='mass energy pc'.split()
-        names ='mass0 energy0 p0c'.split()
-        names+='partid elemid turn state'.split()
+        names ='partid elemid turn state'.split()
+        names+='s x px y py tau ptau delta'.split()
+        names+='mass energy pc'.split()
+        names+='mass0 energy0 p0c'.split()
         for name in names:
             out[name]=getattr(self,name)
         return out
