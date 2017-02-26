@@ -871,6 +871,8 @@ class SixTrackInput(object):
   def expand_struct(self,convert=classes):
       elems=[]
       count={}
+      icount=0
+      iconv=[]
       names=[]
       rest=[]
       drift=convert['drift']
@@ -878,12 +880,16 @@ class SixTrackInput(object):
       cavity  =convert['cavity']
       align=convert['align']
       block=convert['block']
+      exclude=False
       for nnn in self.iter_struct():
+          exclude=False
           ccc=count.setdefault(nnn,0)
           etype,d1,d2,d3,d4,d5,d6=self.single[nnn]
           elem=None
           if etype in [0,25]:
               elem=drift(d3)
+              if d3>0:
+                exclude=True
           elif abs(etype) in [1,2,3,4,5,7,8,9,10]:
               bn_six=d1;nn=abs(etype); sign=-etype/nn
               madval=bn_mad(bn_six,nn,sign)
@@ -902,10 +908,11 @@ class SixTrackInput(object):
                   ksl[0]=hxl
               elem=multipole(knl,ksl,hxl,hyl,l)
           elif etype==12:
-              e0=self.initialconditions[-1]
-              p0c=np.sqrt(e0**2-self.pma**2)
-              beta0=p0c/e0
-              v=d1; freq=d2
+              #e0=self.initialconditions[-1]
+              #p0c=np.sqrt(e0**2-self.pma**2)
+              #beta0=p0c/e0
+              v=d1*1e6; freq=d2*clight/self.tlen
+              print(v,freq)
               elem=cavity(v,freq,lag=180-d3)
           else:
               rest.append([nnn]+self.single[nnn])
@@ -916,18 +923,21 @@ class SixTrackInput(object):
               dx*=1e-3;
               dy*=1e-3;
               names.append(nnn+'_alignpre')
-              elems.append(align(-dx,-dy,-tilt))
+              elems.append(align(dx,dy,tilt))
               names.append(nnn)
               elems.append(elem)
               names.append(nnn+'_alignpost')
-              elems.append(align(dx,dy,tilt))
+              elems.append(align(-dx,-dy,-tilt))
             else:
               elems.append(elem)
               names.append(nnn)
+            if not exclude:
+              iconv.append(icount)
+            icount+=1
           count[nnn]=ccc+1
       newelems=[dict(i._asdict()) for i in elems]
       types=[i.__class__.__name__ for i in elems]
-      return zip(names,types,newelems),rest
+      return zip(names,types,newelems),rest,iconv
 
 
 

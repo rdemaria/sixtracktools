@@ -56,10 +56,12 @@ class SixDump3(object):
         self.particles['mass0']  *=1e6
         self.particles['p0c']    *=1e6
         self.particles['energy0']*=1e6
+        self.particles['energy']*=1e6
+        self.particles['pc']*=1e6
     px    =property(lambda p: p.xp/p.rpp)
     py    =property(lambda p: p.yp/p.rpp)
     ptau  =property(lambda p: (p.energy-p.energy0)/p.p0c)
-    psigma=property(lambda p: p.tau/p.beta0)
+    psigma=property(lambda p: p.ptau/p.beta0)
     tau   =property(lambda p: p.sigma*p.beta0)
     mass  =property(lambda p: p.mass0)
     charge=property(lambda p: 1)
@@ -82,7 +84,7 @@ class SixDump3(object):
         names+='s x px y py tau ptau sigma psigma delta'.split()
         names+='rpp rvv beta gamma energy pc'.split()
         names+='mass charge mratio qratio chi'.split()
-        names+='p0c energy0 mass0 gamma0 beta0'.split()
+        names+='p0c energy0 mass0 gamma0 beta0 charge0'.split()
         for name in names:
             out[name]=getattr(self,name)
         return out
