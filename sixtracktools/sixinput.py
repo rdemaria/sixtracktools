@@ -912,7 +912,7 @@ class SixTrackInput(object):
               #p0c=np.sqrt(e0**2-self.pma**2)
               #beta0=p0c/e0
               v=d1*1e6; freq=d2*clight/self.tlen
-              print(v,freq)
+              #print(v,freq)
               elem=cavity(v,freq,lag=180-d3)
           else:
               rest.append([nnn]+self.single[nnn])
