@@ -99,7 +99,7 @@ def opendir(basedir='.'):
   npart=head['parttot']
   for i in range(1,npart/2):
     fn =os.path.join(basedir,'fort.%d'%(90-i))
-    nhead,ndata=read_fortbin(fn)
+    nhead,ndata=open(fn)
   #  for lbl,obj in nhead.items():
   #    print "%-8s <%s>"%(lbl, obj)
     part.update(ndata)
