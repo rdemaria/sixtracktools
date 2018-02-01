@@ -319,14 +319,14 @@ class SixTrackInput(object):
               vvv='partnum emitnx emitny sigz sige ibeco ibtyp lhc ibbc'
               self.var_from_line(currline,vvv)
               # loop over all beam-beam elements
-              currline = f3.next().strip()
+              currline = next(f3).strip()
               self.bbelements = {}
               while not currline.startswith('NEXT'):
                   name, data = currline.split(' ', 1)
                   data = data.split()
                   data = [int(data[0]), float(data[1]), float(data[2])]
                   self.bbelements[name.strip()] = data
-                  currline = f3.next().strip()
+                  currline = next(f3).strip()
 
       elif currline.startswith('CHRO'):
           currline = next(f3)
