@@ -89,8 +89,6 @@ class Variable(object):
            return self.vtype(value)
 
 
-
-
 class SixTrackInput(object):
   classes=dict(
     drift=namedtuple('drift','length'),
@@ -98,6 +96,7 @@ class SixTrackInput(object):
     cavity =namedtuple('cavity','volt freq lag'),
     align=namedtuple('align','dx dy tilt'),
     block=namedtuple('block','elems'),
+    beambeam4d = namedtuple('beambeam4d','Sigma_xx Sigma_yy h_sep v_sep strengthratio')
   )
   variables=OrderedDict(
   [('title', Variable('','START','Study title')),
@@ -313,7 +312,35 @@ class SixTrackInput(object):
           currline = next(f3).strip()
           if currline.startswith('EXPERT'):
               print('I am expert :-)')
-              #~ import pdb; pdb.set_trace()
+              
+              currline = next(f3).strip()
+              linesplit = currline.split()
+              vvv='partnum emitnx emitny sigz sige ibeco ibtyp lhc ibbc'
+              self.var_from_line(currline,vvv)
+              
+              self.bbelements = {}
+              currline = next(f3).strip()
+              while not currline.startswith('NEXT'):
+                  linesplit = currline.split()
+                  name = linesplit[0]
+                  nslices = int(linesplit[1])
+                  if nslices>0:
+                      currline = next(f3).strip()
+                      currline = next(f3).strip()
+                      self.bbelements[name] = 'It is 6D, deling with this later'
+                  elif nslices==0:
+                      self.bbelements[name] = self.classes['beambeam4d'](
+                                        *map(float, linesplit[2:]))
+                  else:
+                      raise ValueError('ibsix must be >=0!')
+                  
+                  
+                  currline = next(f3).strip()
+                  
+              
+              
+              
+              
           else:
               linesplit = currline.split()
               vvv='partnum emitnx emitny sigz sige ibeco ibtyp lhc ibbc'
@@ -321,6 +348,7 @@ class SixTrackInput(object):
               # loop over all beam-beam elements
               currline = next(f3).strip()
               self.bbelements = {}
+              print('Needs to be homogenized with EXPERT')
               while not currline.startswith('NEXT'):
                   name, data = currline.split(' ', 1)
                   data = data.split()
