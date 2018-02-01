@@ -801,14 +801,10 @@ class SixTrackInput(object):
           ll = next(f3).strip()
           while not ll.startswith('NEXT'):
               self.struct.extend(ll.split())
-<<<<<<< HEAD
               ll = next(f3).strip()
-=======
-              ll = f3.next().strip()
 
     # end of the while loop (finished reading fort.2 and fort.3)
 
->>>>>>> 377b5ba7e1295010481007d1e14986d82b2969f8
     self.add_default_vars()
     #self.add_struct_count()
     if hasattr(self,'mult'):
@@ -826,13 +822,8 @@ class SixTrackInput(object):
        self.align={}
        for name,(dx,dy,tilt) in readf8(self.filenames['fort.8']):
            self.align.setdefault(name,[]).append((dx,dy,tilt))
-<<<<<<< HEAD
     print(self.prettyprint(full=False))
-=======
-    print self.prettyprint(full=False)
     
-    
->>>>>>> 377b5ba7e1295010481007d1e14986d82b2969f8
   def add_default_vars(self):
       for name,var in self.variables.items():
           if not hasattr(self,name):
