@@ -93,7 +93,7 @@ class SixTrackInput(object):
   classes=dict(
     drift=namedtuple('drift','length'),
     multipole=namedtuple('multipole','knl ksl hxl hyl length'),
-    cavity =namedtuple('cavity','volt freq lag'),
+    cavity=namedtuple('cavity','volt freq lag'),
     align=namedtuple('align','dx dy tilt'),
     block=namedtuple('block','elems'),
     beambeam4d = namedtuple('beambeam4d','Sigma_xx Sigma_yy h_sep v_sep strengthratio'),
@@ -314,8 +314,7 @@ class SixTrackInput(object):
       elif currline.startswith('BEAM'):
           currline = next(f3).strip()
           if currline.startswith('EXPERT'):
-              print('I am expert :-)')
-              
+              # Beam-beam
               currline = next(f3).strip()
               linesplit = currline.split()
               vvv='partnum emitnx emitny sigz sige ibeco ibtyp lhc ibbc'
@@ -927,9 +926,11 @@ class SixTrackInput(object):
       rest=[]
       drift=convert['drift']
       multipole=convert['multipole']
-      cavity  =convert['cavity']
+      cavity=convert['cavity']
       align=convert['align']
       block=convert['block']
+      beambeam4d=convert['beambeam4d']
+      beambeam6d=convert['beambeam6d']
       exclude=False
       for nnn in self.iter_struct():
           exclude=False
@@ -966,8 +967,17 @@ class SixTrackInput(object):
               v=d1*1e6; freq=d2*clight/self.tlen
               #print(v,freq)
               elem=cavity(v,freq,lag=180-d3)
+          elif etype==20: 
+              thisbb = self.bbelements[nnn]
+              if type(thisbb) is self.classes['beambeam4d']:
+                  elem = beambeam4d(*thisbb)
+              elif type(thisbb) is self.classes['beambeam6d']:
+                  elem = beambeam6d(*thisbb)
+              else:
+                  raise ValueError('What?!')
           else:
               rest.append([nnn]+self.single[nnn])
+              
           if elem is not None:
             if nnn in self.align:
               dx,dy,tilt=self.align[nnn][ccc]
@@ -989,7 +999,7 @@ class SixTrackInput(object):
           count[nnn]=ccc+1
       newelems=[dict(i._asdict()) for i in elems]
       types=[i.__class__.__name__ for i in elems]
-      return zip(names,types,newelems),rest,iconv
+      return list(zip(names,types,newelems)),rest,iconv
 
 
 
