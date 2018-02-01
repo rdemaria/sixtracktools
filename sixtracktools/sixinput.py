@@ -96,7 +96,10 @@ class SixTrackInput(object):
     cavity =namedtuple('cavity','volt freq lag'),
     align=namedtuple('align','dx dy tilt'),
     block=namedtuple('block','elems'),
-    beambeam4d = namedtuple('beambeam4d','Sigma_xx Sigma_yy h_sep v_sep strengthratio')
+    beambeam4d = namedtuple('beambeam4d','Sigma_xx Sigma_yy h_sep v_sep strengthratio'),
+    beambeam6d = namedtuple('beambeam6d','ibsix xang xplane h_sep v_sep '+\
+                'Sigma_xx Sigma_xxp Sigma_xpxp Sigma_yy Sigma_yyp '+\
+                'Sigma_ypyp Sigma_xy Sigma_xyp Sigma_xpy Sigma_xpyp strengthratio')
   )
   variables=OrderedDict(
   [('title', Variable('','START','Study title')),
@@ -326,21 +329,20 @@ class SixTrackInput(object):
                   nslices = int(linesplit[1])
                   if nslices>0:
                       currline = next(f3).strip()
+                      linesplit1 = currline.split()
                       currline = next(f3).strip()
-                      self.bbelements[name] = 'It is 6D, deling with this later'
+                      linesplit2 = currline.split()
+                      thesedata = list(map(float,
+                                    linesplit[2:] + linesplit1 + linesplit2))
+                      #~ import pdb; pdb.set_trace()
+                      self.bbelements[name] = self.classes['beambeam6d'](*([nslices]+thesedata))
                   elif nslices==0:
                       self.bbelements[name] = self.classes['beambeam4d'](
-                                        *map(float, linesplit[2:]))
+                                        *list(map(float, linesplit[2:])))
                   else:
                       raise ValueError('ibsix must be >=0!')
-                  
-                  
                   currline = next(f3).strip()
-                  
-              
-              
-              
-              
+
           else:
               linesplit = currline.split()
               vvv='partnum emitnx emitny sigz sige ibeco ibtyp lhc ibbc'
