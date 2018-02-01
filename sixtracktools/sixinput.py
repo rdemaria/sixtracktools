@@ -16,7 +16,7 @@ def getlines(fn):
     if fn.endswith('.gz'):
       fh=gzip.open(fn)
     else:
-      fh = file(fn)
+      fh = open(fn)
     for ll in fh:
       if not ll.startswith('/'):
          yield ll.strip()
@@ -41,7 +41,7 @@ def readf16(fn):
     if fn.endswith('.gz'):
       fh=gzip.open(fn)
     else:
-      fh = file(fn)
+      fh = open(fn)
     out=[]
     state='label'
     for lll in fh:
@@ -64,7 +64,7 @@ def readf8(fn):
   if fn.endswith('.gz'):
     fh=gzip.open(fn)
   else:
-    fh = file(fn)
+    fh = open(fn)
   out=[]
   for lll in fh:
     name,rest=lll.split(None,1)
@@ -288,7 +288,7 @@ class SixTrackInput(object):
     f3 = getlines(self.filenames['fort.3'])
     while 1:
       try:
-          ll = f3.next().strip()
+          ll = next(f3).strip()
       except StopIteration:
           break
 
@@ -305,22 +305,22 @@ class SixTrackInput(object):
 
       # BLOCKS FOR FORT.3 IN ALPHABETICAL ORDER
       elif ll.startswith('BEAM'):
-          ll = f3.next().strip()
+          ll = next(f3).strip()
           lls = ll.split()
           vvv='partnum emitnx emitny sigz sige ibeco ibtyp lhc ibbc'
           self.var_from_line(ll,vvv)
           # loop over all beam-beam elements
-          ll = f3.next().strip()
+          ll = next(f3).strip()
           self.bbelements = {}
           while not ll.startswith('NEXT'):
               name, data = ll.split(' ', 1)
               data = data.split()
               data = [int(data[0]), float(data[1]), float(data[2])]
               self.bbelements[name.strip()] = data
-              ll = f3.next().strip()
+              ll = next(f3).strip()
 
       elif ll.startswith('CHRO'):
-          ll = f3.next()
+          ll = next(f3)
           self.chromcorr = {}
           while not ll.startswith('NEXT'):
               name, data = ll.split(' ', 1)
@@ -330,25 +330,25 @@ class SixTrackInput(object):
               else:
                   data = [myfloat(data[0])]
               self.chromcorr[name.strip()] = data
-              ll = f3.next()
+              ll = next(f3)
 
       elif ll.startswith('CORR'):
-          ll = f3.next()
+          ll = next(f3)
           if not ll.startswith('NEXT'):
               lls = ll.split()
               self.ctype = int(lls[0])
               self.ncor = int(lls[1])
-              ll = f3.next()
+              ll = next(f3)
           if not ll.startswith('NEXT'):
               self.corr_names = ll.split()
-              ll = f3.next()
+              ll = next(f3)
           if not ll.startswith('NEXT'):
               lls = ll.split()
               self.corr_parameters = [int(lls[0]), int(lls[1]), myfloat(lls[2]), \
                           myfloat(lls[3]), myfloat(lls[4])]
 
       elif ll.startswith('COMB'):
-          ll = f3.next()
+          ll = next(f3)
           self.e0 = []
           self.eRpairs = []
           while not ll.startswith('NEXT'):
@@ -358,34 +358,34 @@ class SixTrackInput(object):
                   eRpairs[ii*2] = myfloat(eRpairs[ii*2])
               self.e0.append(e0)
               self.eRpairs.append(eRpairs)
-              ll = f3.next()
-          print self.e0
-          print self.eRpairs
+              ll = next(f3)
+          print(self.e0)
+          print(self.eRpairs)
 
       elif ll.startswith('COMM'):
           self.comment = ll[:]
 
       elif ll.startswith('DECO'):
-          ll = f3.next()
+          ll = next(f3)
           if not ll.startswith('NEXT'):
               lls = ll.split()
               self.deco_name1 = lls[0]
               self.deco_name2 = lls[1]
               self.deco_name3 = lls[2]
               self.deco_name4 = lls[3]
-              ll = f3.next()
+              ll = next(f3)
           if not ll.startswith('NEXT'):
               lls = ll.split()
               self.deco_name5 = lls[0]
               self.deco_Qx = myfloat(lls[1])
-              ll = f3.next()
+              ll = next(f3)
           if not ll.startswith('NEXT'):
               lls = ll.split()
               self.deco_name6 = lls[0]
               self.deco_Qy = myfloat(lls[1])
 
       elif ll.startswith('DIFF'):
-          ll = f3.next()
+          ll = next(f3)
           if not ll.startswith('NEXT'):
               lls = ll.split()
               self.diff_nord = int(lls[0])
@@ -393,15 +393,15 @@ class SixTrackInput(object):
               self.diff_preda = myfloat(lls[2])
               self.diff_nsix = int(lls[3])
               self.diff_ncor = int(lls[4])
-              ll = f3.next()
+              ll = next(f3)
           if not ll.startswith('NEXT'):
               if self.diff_ncor != len(ll.split()):
                   # temporary error handling, does not abort execution
-                  print 'ERROR: Mismatch between #items in row 2 and ncor'
+                  print('ERROR: Mismatch between #items in row 2 and ncor')
               self.diff_name = ll.split()
 
       elif ll.startswith('DISP'):
-          ll = f3.next()
+          ll = next(f3)
           self.displacements = {}
           while not ll.startswith('NEXT'):
               name, data = ll.split(' ', 1)
@@ -409,7 +409,7 @@ class SixTrackInput(object):
               self.displacements[name.strip()] = data
 
       elif ll.startswith('FLUC'):
-          ll = f3.next().strip()
+          ll = next(f3).strip()
           lls = ll.split()
           self.izu0 = int(lls[0])
           self.mmac = int(lls[1])
@@ -417,7 +417,7 @@ class SixTrackInput(object):
           self.mcut = int(lls[3])
 
       elif ll.startswith('INIT'):
-          ll = f3.next().strip()
+          ll = next(f3).strip()
           self.initialconditions = []
           if not ll.startswith('NEXT'):
               lls = ll.split()
@@ -426,31 +426,31 @@ class SixTrackInput(object):
               self.chid = myfloat(lls[2])
               self.rat  = myfloat(lls[3])
               self.iver = int(lls[4])
-              ll = f3.next().strip()
+              ll = next(f3).strip()
           while not ll.startswith('NEXT'):
               self.initialconditions.append(myfloat(ll))
-              ll = f3.next().strip()
+              ll = next(f3).strip()
 
       elif ll.startswith('ITER'):
-          ll = f3.next().strip()
+          ll = next(f3).strip()
           if not ll.startswith('NEXT'):
               lls = ll.split()
               self.itco = int(lls[0])
               self.dma  = myfloat(lls[1])
               self.dmap = myfloat(lls[2])
-              ll = f3.next().strip()
+              ll = next(f3).strip()
           if not ll.startswith('NEXT'):
               lls = ll.split()
               self.itqv = int(lls[0])
               self.dkq  = myfloat(lls[1])
               self.dqq  = myfloat(lls[2])
-              ll = f3.next().strip()
+              ll = next(f3).strip()
           if not ll.startswith('NEXT'):
               lls = ll.split()
               self.itcro = int(lls[0])
               self.dsm0  = myfloat(lls[1])
               self.dech  = myfloat(lls[2])
-              ll = f3.next().strip()
+              ll = next(f3).strip()
           if not ll.startswith('NEXT'):
               lls = ll.split()
               self.de0 = myfloat(lls[0])
@@ -464,7 +464,7 @@ class SixTrackInput(object):
                   self.aper2 = myfloat(lls[4])
 
       elif ll.startswith('LIMI'):
-          ll = f3.next()
+          ll = next(f3)
           self.aperturelimitations = {}
           while not ll.startswith('NEXT'):
               name, data = ll.split(' ', 1)
@@ -473,7 +473,7 @@ class SixTrackInput(object):
               self.aperturelimitations[name.strip()] = data
 
       elif ll.startswith('LINE'):
-          ll = f3.next()
+          ll = next(f3)
           if not ll.startswith('NEXT'):
               lls = ll.split()
               self.mode = lls[0]
@@ -482,15 +482,15 @@ class SixTrackInput(object):
               self.ntco = int(lls[3])
               self.E_I = myfloat(lls[4])
               self.E_II = myfloat(lls[5])
-              ll = f3.next()
+              ll = next(f3)
           self.linenames = []
           while not ll.startswith('NEXT'):
               names = ll.split()
               self.linenames = self.linenames.append(names)
-              ll = f3.next()
+              ll = next(f3)
 
       elif ll.startswith('MULT'):
-          ll = f3.next()
+          ll = next(f3)
           try:
               self.mult
           except AttributeError:
@@ -499,49 +499,49 @@ class SixTrackInput(object):
           name, data = ll.split(' ', 1)
           data = data.split()
           data = [myfloat(data[0]), myfloat(data[1])]
-          ll = f3.next()
+          ll = next(f3)
           while not ll.startswith('NEXT'):
               lls = ll.split()
               lls = [myfloat(item) for item in lls]
               data.append(lls)
               self.mult[name.strip()] = data
-              ll = f3.next()
+              ll = next(f3)
 
       elif ll.startswith('NORM'):
-          ll = f3.next()
+          ll = next(f3)
           if not ll.startswith('NEXT'):
               lls = ll.split()
               self.nord = int(lls[0])
               self.nvar = int(lls[1])
 
       elif ll.startswith('ORBI'):
-          ll = f3.next()
+          ll = next(f3)
           lls = ll.split()
           self.sigmax  = myfloat(lls[0])
           self.sigmay  = myfloat(lls[1])
           self.ncorru  = int(lls[2])
           self.ncorrep = int(lls[3])
-          ll = f3.next()
+          ll = next(f3)
           while not ll.startswith('NEXT'):
               # not implemented, see manual at 3.5.4 Orbit Correction
-              ll = f3.next()
+              ll = next(f3)
 
       elif ll.startswith('ORGA'):
-          ll = f3.next()
+          ll = next(f3)
           self.organisation_ran_numb = {}
           ii = 0
           while not ll.startswith('NEXT'):
               lls = ll.split()
               name = 'orga' + str(ii)
               self.organisation_ran_numb[name] = lls
-              ll = f3.next()
+              ll = next(f3)
               ii += 1
 
       elif ll.startswith('POST'):
-          ll = f3.next().strip()
+          ll = next(f3).strip()
           if not ll.startswith('NEXT'):
               self.post_comment = ll
-              ll = f3.next().strip()
+              ll = next(f3).strip()
           if not ll.startswith('NEXT'):
               lls = ll.split()
               self.post_iav = int(lls[0])
@@ -555,7 +555,7 @@ class SixTrackInput(object):
               self.post_imad = int(lls[8])
               self.post_cma1 = myfloat(lls[9])
               self.post_cma2 = myfloat(lls[10])
-              ll = f3.next().strip()
+              ll = next(f3).strip()
           if not ll.startswith('NEXT'):
               lls = ll.split()
               self.post_Qx0 = myfloat(lls[0])
@@ -566,7 +566,7 @@ class SixTrackInput(object):
               self.post_dres = myfloat(lls[5])
               self.post_ifh = int(lls[6])
               self.post_dfft = myfloat(lls[7])
-              ll = f3.next().strip()
+              ll = next(f3).strip()
           if not ll.startswith('NEXT'):
               lls = ll.split()
               self.post_kwtype = int(lls[0])
@@ -581,10 +581,10 @@ class SixTrackInput(object):
 
       elif ll.startswith('PRIN'):
           self.printout = True
-          f3.next()
+          next(f3)
 
       elif ll.startswith('RESO'):
-          ll = f3.next()
+          ll = next(f3)
           if not ll.startswith('NEXT'):
               lls = ll.split()
               self.resonance_nr = int(lls[0])
@@ -595,14 +595,14 @@ class SixTrackInput(object):
               self.resonance_ip1 = int(lls[5])
               self.resonance_ip2 = int(lls[6])
               self.resonance_ip3 = int(lls[7])
-              ll = f3.next()
+              ll = next(f3)
           if not ll.startswith('NEXT'):
               lls = ll.split()
               self.resonance_nrs = int(lls[0])
               self.resonance_ns1 = int(lls[1])
               self.resonance_ns2 = int(lls[2])
               self.resonance_ns3 = int(lls[3])
-              ll = f3.next()
+              ll = next(f3)
           if not startswith('NEXT'):
               lls = ll.split()
               self.resonance_length = myfloat(lls[0])
@@ -610,7 +610,7 @@ class SixTrackInput(object):
               self.resonance_Qy = myfloat(lls[2])
               self.resonance_Ax = myfloat(lls[3])
               self.resonance_Ay = myfloat(lls[4])
-              ll = f3.next()
+              ll = next(f3)
           if not startswith('NEXT'):
               lls = ll.split()
               self.resonance_name1 = lls[0]
@@ -619,15 +619,15 @@ class SixTrackInput(object):
               self.resonance_name4 = lls[3]
               self.resonance_name5 = lls[4]
               self.resonance_name6 = lls[5]
-              ll = f3.next()
+              ll = next(f3)
           if not startswith('NEXT'):
-              lls = f3.next()
+              lls = next(f3)
               self.resonance_nch = int(lls[0])
               self.resonance_name7 = lls[1]
               self.resonance_name8 = lls[2]
-              ll = f3.next()
+              ll = next(f3)
           if not startswith('NEXT'):
-              lls = f3.next()
+              lls = next(f3)
               self.resonance_nq = int(lls[0])
               self.resonance_name9 = lls[1]
               self.resonance_name10 = lls[2]
@@ -635,7 +635,7 @@ class SixTrackInput(object):
               self.resonance_Qy0 = myfloat(lls[4])
 
       elif ll.startswith('RIPP'):
-          ll = f3.next()
+          ll = next(f3)
           self.ripp = {}
           while not ll.startswith('NEXT'):
               name, settings = ll.split(' ', 1)
@@ -643,10 +643,10 @@ class SixTrackInput(object):
               data = [myfloat(item) for item in settings[0:3]]
               data.append(int(settings[3]))
               self.ripp[name] = data
-              ll = f3.next()
+              ll = next(f3)
 
       elif ll.startswith('SEAR'):
-          ll = f3.next()
+          ll = next(f3)
           if not ll.startswith('NEXT'):
               lls = ll.split()
               self.search_Qx = myfloat(lls[0])
@@ -654,7 +654,7 @@ class SixTrackInput(object):
               self.search_Ax = myfloat(lls[2])
               self.search_Ay = myfloat(lls[3])
               self.search_length = myfloat(lls[4])
-              ll = f3.next()
+              ll = next(f3)
           if not ll.startswith('NEXT'):
               lls = ll.split()
               self.search_npos = int(lls[0])
@@ -665,12 +665,12 @@ class SixTrackInput(object):
               self.search_ip1 = int(lls[5])
               self.search_ip2 = int(lls[6])
               self.search_ip3 = int(lls[7])
-              ll = f3.next()
+              ll = next(f3)
           if not ll.startswith('NEXT'):
               self.sear_name = ll.split()
 
       elif ll.startswith('SUBR'):
-          ll = f3.next()
+          ll = next(f3)
           if not ll.startswith('NEXT'):
               lls = ll.split()
               self.subres_n1 = int(lls[0])
@@ -683,7 +683,7 @@ class SixTrackInput(object):
               self.subres_length = myfloat(lls[7])
 
       elif ll.startswith('SYNC'):
-          ll = f3.next().strip()
+          ll = next(f3).strip()
           if not ll.startswith('NEXT'):
               lls = ll.split()
               self.harm  = myfloat(lls[0])
@@ -695,14 +695,14 @@ class SixTrackInput(object):
               self.ition = int(lls[6])
               if len(lls) == 8:
                   self.dppoff = myfloat(lls[7])
-              ll = f3.next().strip()
+              ll = next(f3).strip()
           if not ll.startswith('NEXT'):
               lls = ll.split()
               self.dpscor = myfloat(lls[0])
               self.sigcor = myfloat(lls[1])
 
       elif ll.startswith('TRAC'):
-          ll = f3.next().strip()
+          ll = next(f3).strip()
           if not ll.startswith('NEXT'):
               lls = ll.split()
               self.numl  = int(lls[0])
@@ -712,7 +712,7 @@ class SixTrackInput(object):
               self.amp0  = myfloat(lls[4])
               self.ird   = int(lls[5])
               self.imc   = int(lls[6])
-              ll = f3.next().strip()
+              ll = next(f3).strip()
           if not ll.startswith('NEXT'):
               lls = ll.split()
               self.idy1  = int(lls[0])
@@ -720,79 +720,79 @@ class SixTrackInput(object):
               self.idfor = int(lls[2])
               self.irew  = int(lls[3])
               self.iclo6 = int(lls[4])
-              ll = f3.next().strip()
+              ll = next(f3).strip()
           if not ll.startswith('NEXT'):
               vvv='nde1 nde2 nwr1 nwr2 nwr3 nwr4 ntwin ibidu iexact'
               self.var_from_line(ll,vvv)
 
       elif ll.startswith('TUNE'):
-          ll = f3.next()
+          ll = next(f3)
           if not ll.startswith('NEXT'):
               lls = ll.split()
               self.tune_name1 = lls[0]
               self.tune_Qx = myfloat(lls[1])
               if len(lls) == 3:
                   self.tune_iqmod6 = int(lls[2])
-              ll = f3.next()
+              ll = next(f3)
           if not ll.startswith('NEXT'):
               lls = ll.split()
               self.tune_name2 = lls[0]
               self.tune_Qy = myfloat(lls[1])
-              ll = f3.next()
+              ll = next(f3)
           if not ll.startswith('NEXT'):
               lls = ll.split()
               self.tune_name3 = lls[0]
               self.tune_deltaQ = myfloat(lls[1])
-              ll = f3.next()
+              ll = next(f3)
           if not ll.startswith('NEXT'):
               lls = ll.split()
               self.tune_name4 = lls[0]
               self.tune_name5 = lls[1]
 
       elif ll.startswith('TROM'):
-          ll = f3.next()
+          ll = next(f3)
           self.trom = {}
           while not ll.startswith('NEXT'):
               name = ll
-              ll = f3.next()
+              ll = next(f3)
               cvar = [myfloat(item) for item in ll.split()]
-              ll = f3.next()
+              ll = next(f3)
               cvar = cvar + [myfloat(item) for item in ll.split()]
               Mvar = []
               for ii in range(0, 12):
-                  ll = f3.next()
+                  ll = next(f3)
                   Mvar = Mvar + [myfloat(item) for item in ll.split()]
               data = cvar + Mvar
               self.trom[name] = data
-              ll = f3.next()
+              ll = next(f3)
 
       # BLOCKS FOUND IN FORT.2 (IF GEOM)
       elif ll.startswith('SING'):
           self.single = {}
-          ll = f3.next().strip()
+          ll = next(f3).strip()
           while not ll.startswith('NEXT'):
               name, etype, data = ll.split(None, 2)
               data = [myfloat(dd) for dd in data.split()]
               self.single[name.strip()] = [int(etype)]+data
-              ll = f3.next().strip()
+              ll = next(f3).strip()
 
       elif ll.startswith('BLOC'):
-          lls = f3.next().strip().split()
+          lls = next(f3).strip().split()
           self.mper = lls[0]
           self.msym = [int(ii) for ii in lls[1:]]
-          ll = f3.next().strip()
+          ll = next(f3).strip()
           self.blocks = {}
           while not ll.startswith('NEXT'):
               lls = ll.split()
               self.blocks[lls[0]] = lls[1:]
-              ll = f3.next().strip()
+              ll = next(f3).strip()
 
       elif ll.startswith('STRU'):
           self.struct = []
-          ll = f3.next().strip()
+          ll = next(f3).strip()
           while not ll.startswith('NEXT'):
               self.struct.extend(ll.split())
-              ll = f3.next().strip()
+              ll = next(f3).strip()
     self.add_default_vars()
     #self.add_struct_count()
     for nnn,data in self.mult.items():
@@ -807,7 +807,7 @@ class SixTrackInput(object):
        self.align={}
        for name,(dx,dy,tilt) in readf8(self.filenames['fort.8']):
            self.align.setdefault(name,[]).append((dx,dy,tilt))
-    print self.prettyprint(full=False)
+    print(self.prettyprint(full=False))
   def add_default_vars(self):
       for name,var in self.variables.items():
           if not hasattr(self,name):
@@ -854,11 +854,11 @@ class SixTrackInput(object):
       res=0;cc=0
       for n,(a,b) in enumerate(zip(knlmad,knl)):
          if a!=0:
-           print a,b,a/b
+           print(a,b,a/b)
            res+=a/b; cc+=1
       for n,(a,b) in enumerate(zip(kslmad,ksl)):
          if a!=0:
-           print a,b,a/b
+           print(a,b,a/b)
            res+=a/b; cc+=1
       return 1-res/cc
   def iter_struct(self):
