@@ -17,9 +17,9 @@ def getlines(fn):
       fh=gzip.open(fn)
     else:
       fh = open(fn)
-    for ll in fh:
-      if not ll.startswith('/'):
-         yield ll.strip()
+    for currline in fh:
+      if not currline.startswith('/'):
+         yield currline.strip()
 
 def myfloat(l):
   return float(l.replace('D', 'E').replace('d', 'E'))
@@ -44,13 +44,13 @@ def readf16(fn):
       fh = open(fn)
     out=[]
     state='label'
-    for lll in fh:
+    for thisl in fh:
         if state=='label':
             bn=[]; an=[]
-            name=lll.strip()
+            name=thisl.strip()
             state='data'
         elif state=='data':
-            ddd=map(myfloat,lll.split())
+            ddd=map(myfloat,thisl.split())
             if len(bn)<20:
                 bn.extend(ddd)
             else:
@@ -66,8 +66,8 @@ def readf8(fn):
   else:
     fh = open(fn)
   out=[]
-  for lll in fh:
-    name,rest=lll.split(None,1)
+  for thisl in fh:
+    name,rest=thisl.split(None,1)
     data=map(myfloat,rest.split())
     out.append((name,data))
   return out
@@ -292,15 +292,15 @@ class SixTrackInput(object):
     f3 = getlines(self.filenames['fort.3']) # f3 is an iterator
     while 1:
       try:
-          ll = next(f3).strip()
+          currline = next(f3).strip()
       except StopIteration:
           break
 
       # START AND END BLOCKS
-      if ll.startswith('FREE') or ll.startswith('GEOM'):
-          self.title = ll.split(' ',1)[1]
-          self.geom = ll[:4]
-      elif ll.startswith('ENDE'):
+      if currline.startswith('FREE') or currline.startswith('GEOM'):
+          self.title = currline.split(' ',1)[1]
+          self.geom = currline[:4]
+      elif currline.startswith('ENDE'):
           if self.geom == 'GEOM':
               # continue with f2 if necessary
               f3 = getlines(self.filenames['fort.2'])
@@ -309,499 +309,500 @@ class SixTrackInput(object):
       
       # BLOCKS OF INFORMATION FOR FROM FORT.3 IN ALPHABETICAL ORDER
       
-      elif ll.startswith('BEAM'):
-          ll = next(f3).strip()
-          if ll.startswith('EXPERT'):
+      elif currline.startswith('BEAM'):
+          currline = next(f3).strip()
+          if currline.startswith('EXPERT'):
               print('I am expert :-)')
+              #~ import pdb; pdb.set_trace()
           else:
-              lls = ll.split()
+              linesplit = currline.split()
               vvv='partnum emitnx emitny sigz sige ibeco ibtyp lhc ibbc'
-              self.var_from_line(ll,vvv)
+              self.var_from_line(currline,vvv)
               # loop over all beam-beam elements
-              ll = f3.next().strip()
+              currline = f3.next().strip()
               self.bbelements = {}
-              while not ll.startswith('NEXT'):
-                  name, data = ll.split(' ', 1)
+              while not currline.startswith('NEXT'):
+                  name, data = currline.split(' ', 1)
                   data = data.split()
                   data = [int(data[0]), float(data[1]), float(data[2])]
                   self.bbelements[name.strip()] = data
-                  ll = f3.next().strip()
+                  currline = f3.next().strip()
 
-      elif ll.startswith('CHRO'):
-          ll = next(f3)
+      elif currline.startswith('CHRO'):
+          currline = next(f3)
           self.chromcorr = {}
-          while not ll.startswith('NEXT'):
-              name, data = ll.split(' ', 1)
+          while not currline.startswith('NEXT'):
+              name, data = currline.split(' ', 1)
               data = data.split()
               if len(data) == 2:
                   data = [myfloat(data[0]), int(data[1])]
               else:
                   data = [myfloat(data[0])]
               self.chromcorr[name.strip()] = data
-              ll = next(f3)
+              currline = next(f3)
 
-      elif ll.startswith('CORR'):
-          ll = next(f3)
-          if not ll.startswith('NEXT'):
-              lls = ll.split()
-              self.ctype = int(lls[0])
-              self.ncor = int(lls[1])
-              ll = next(f3)
-          if not ll.startswith('NEXT'):
-              self.corr_names = ll.split()
-              ll = next(f3)
-          if not ll.startswith('NEXT'):
-              lls = ll.split()
-              self.corr_parameters = [int(lls[0]), int(lls[1]), myfloat(lls[2]), \
-                          myfloat(lls[3]), myfloat(lls[4])]
+      elif currline.startswith('CORR'):
+          currline = next(f3)
+          if not currline.startswith('NEXT'):
+              linesplit = currline.split()
+              self.ctype = int(linesplit[0])
+              self.ncor = int(linesplit[1])
+              currline = next(f3)
+          if not currline.startswith('NEXT'):
+              self.corr_names = currline.split()
+              currline = next(f3)
+          if not currline.startswith('NEXT'):
+              linesplit = currline.split()
+              self.corr_parameters = [int(linesplit[0]), int(linesplit[1]), myfloat(linesplit[2]), \
+                          myfloat(linesplit[3]), myfloat(linesplit[4])]
 
-      elif ll.startswith('COMB'):
-          ll = next(f3)
+      elif currline.startswith('COMB'):
+          currline = next(f3)
           self.e0 = []
           self.eRpairs = []
-          while not ll.startswith('NEXT'):
-              e0, eRpairs = ll.split(' ', 1)
+          while not currline.startswith('NEXT'):
+              e0, eRpairs = currline.split(' ', 1)
               eRpairs = eRpairs.split()
               for ii in range(0, len(eRpairs)/2):
                   eRpairs[ii*2] = myfloat(eRpairs[ii*2])
               self.e0.append(e0)
               self.eRpairs.append(eRpairs)
-              ll = next(f3)
+              currline = next(f3)
           print(self.e0)
           print(self.eRpairs)
 
-      elif ll.startswith('COMM'):
-          self.comment = ll[:]
+      elif currline.startswith('COMM'):
+          self.comment = currline[:]
 
-      elif ll.startswith('DECO'):
-          ll = next(f3)
-          if not ll.startswith('NEXT'):
-              lls = ll.split()
-              self.deco_name1 = lls[0]
-              self.deco_name2 = lls[1]
-              self.deco_name3 = lls[2]
-              self.deco_name4 = lls[3]
-              ll = next(f3)
-          if not ll.startswith('NEXT'):
-              lls = ll.split()
-              self.deco_name5 = lls[0]
-              self.deco_Qx = myfloat(lls[1])
-              ll = next(f3)
-          if not ll.startswith('NEXT'):
-              lls = ll.split()
-              self.deco_name6 = lls[0]
-              self.deco_Qy = myfloat(lls[1])
+      elif currline.startswith('DECO'):
+          currline = next(f3)
+          if not currline.startswith('NEXT'):
+              linesplit = currline.split()
+              self.deco_name1 = linesplit[0]
+              self.deco_name2 = linesplit[1]
+              self.deco_name3 = linesplit[2]
+              self.deco_name4 = linesplit[3]
+              currline = next(f3)
+          if not currline.startswith('NEXT'):
+              linesplit = currline.split()
+              self.deco_name5 = linesplit[0]
+              self.deco_Qx = myfloat(linesplit[1])
+              currline = next(f3)
+          if not currline.startswith('NEXT'):
+              linesplit = currline.split()
+              self.deco_name6 = linesplit[0]
+              self.deco_Qy = myfloat(linesplit[1])
 
-      elif ll.startswith('DIFF'):
-          ll = next(f3)
-          if not ll.startswith('NEXT'):
-              lls = ll.split()
-              self.diff_nord = int(lls[0])
-              self.diff_nvar = int(lls[1])
-              self.diff_preda = myfloat(lls[2])
-              self.diff_nsix = int(lls[3])
-              self.diff_ncor = int(lls[4])
-              ll = next(f3)
-          if not ll.startswith('NEXT'):
-              if self.diff_ncor != len(ll.split()):
+      elif currline.startswith('DIFF'):
+          currline = next(f3)
+          if not currline.startswith('NEXT'):
+              linesplit = currline.split()
+              self.diff_nord = int(linesplit[0])
+              self.diff_nvar = int(linesplit[1])
+              self.diff_preda = myfloat(linesplit[2])
+              self.diff_nsix = int(linesplit[3])
+              self.diff_ncor = int(linesplit[4])
+              currline = next(f3)
+          if not currline.startswith('NEXT'):
+              if self.diff_ncor != len(currline.split()):
                   # temporary error handling, does not abort execution
                   print('ERROR: Mismatch between #items in row 2 and ncor')
-              self.diff_name = ll.split()
+              self.diff_name = currline.split()
 
-      elif ll.startswith('DISP'):
-          ll = next(f3)
+      elif currline.startswith('DISP'):
+          currline = next(f3)
           self.displacements = {}
-          while not ll.startswith('NEXT'):
-              name, data = ll.split(' ', 1)
+          while not currline.startswith('NEXT'):
+              name, data = currline.split(' ', 1)
               data = [myfloat(item) for item in data.split()]
               self.displacements[name.strip()] = data
 
-      elif ll.startswith('FLUC'):
-          ll = next(f3).strip()
-          lls = ll.split()
-          self.izu0 = int(lls[0])
-          self.mmac = int(lls[1])
-          self.mout = int(lls[2])
-          self.mcut = int(lls[3])
+      elif currline.startswith('FLUC'):
+          currline = next(f3).strip()
+          linesplit = currline.split()
+          self.izu0 = int(linesplit[0])
+          self.mmac = int(linesplit[1])
+          self.mout = int(linesplit[2])
+          self.mcut = int(linesplit[3])
 
-      elif ll.startswith('INIT'):
-          ll = next(f3).strip()
+      elif currline.startswith('INIT'):
+          currline = next(f3).strip()
           self.initialconditions = []
-          if not ll.startswith('NEXT'):
-              lls = ll.split()
-              self.itra = int(lls[0])
-              self.chi0 = myfloat(lls[1])
-              self.chid = myfloat(lls[2])
-              self.rat  = myfloat(lls[3])
-              self.iver = int(lls[4])
-              ll = next(f3).strip()
-          while not ll.startswith('NEXT'):
-              self.initialconditions.append(myfloat(ll))
-              ll = next(f3).strip()
+          if not currline.startswith('NEXT'):
+              linesplit = currline.split()
+              self.itra = int(linesplit[0])
+              self.chi0 = myfloat(linesplit[1])
+              self.chid = myfloat(linesplit[2])
+              self.rat  = myfloat(linesplit[3])
+              self.iver = int(linesplit[4])
+              currline = next(f3).strip()
+          while not currline.startswith('NEXT'):
+              self.initialconditions.append(myfloat(currline))
+              currline = next(f3).strip()
 
-      elif ll.startswith('ITER'):
-          ll = next(f3).strip()
-          if not ll.startswith('NEXT'):
-              lls = ll.split()
-              self.itco = int(lls[0])
-              self.dma  = myfloat(lls[1])
-              self.dmap = myfloat(lls[2])
-              ll = next(f3).strip()
-          if not ll.startswith('NEXT'):
-              lls = ll.split()
-              self.itqv = int(lls[0])
-              self.dkq  = myfloat(lls[1])
-              self.dqq  = myfloat(lls[2])
-              ll = next(f3).strip()
-          if not ll.startswith('NEXT'):
-              lls = ll.split()
-              self.itcro = int(lls[0])
-              self.dsm0  = myfloat(lls[1])
-              self.dech  = myfloat(lls[2])
-              ll = next(f3).strip()
-          if not ll.startswith('NEXT'):
-              lls = ll.split()
-              self.de0 = myfloat(lls[0])
-              self.ded = myfloat(lls[1])
-              self.dsi = myfloat(lls[2])
-              if len(lls) == 4:
-                  self.aper1 = myfloat(lls[3])
+      elif currline.startswith('ITER'):
+          currline = next(f3).strip()
+          if not currline.startswith('NEXT'):
+              linesplit = currline.split()
+              self.itco = int(linesplit[0])
+              self.dma  = myfloat(linesplit[1])
+              self.dmap = myfloat(linesplit[2])
+              currline = next(f3).strip()
+          if not currline.startswith('NEXT'):
+              linesplit = currline.split()
+              self.itqv = int(linesplit[0])
+              self.dkq  = myfloat(linesplit[1])
+              self.dqq  = myfloat(linesplit[2])
+              currline = next(f3).strip()
+          if not currline.startswith('NEXT'):
+              linesplit = currline.split()
+              self.itcro = int(linesplit[0])
+              self.dsm0  = myfloat(linesplit[1])
+              self.dech  = myfloat(linesplit[2])
+              currline = next(f3).strip()
+          if not currline.startswith('NEXT'):
+              linesplit = currline.split()
+              self.de0 = myfloat(linesplit[0])
+              self.ded = myfloat(linesplit[1])
+              self.dsi = myfloat(linesplit[2])
+              if len(linesplit) == 4:
+                  self.aper1 = myfloat(linesplit[3])
                   self.aper2 = 'not assigned'
-              if len(lls) == 5:
-                  self.aper1 = myfloat(lls[3])
-                  self.aper2 = myfloat(lls[4])
+              if len(linesplit) == 5:
+                  self.aper1 = myfloat(linesplit[3])
+                  self.aper2 = myfloat(linesplit[4])
 
-      elif ll.startswith('LIMI'):
-          ll = next(f3)
+      elif currline.startswith('LIMI'):
+          currline = next(f3)
           self.aperturelimitations = {}
-          while not ll.startswith('NEXT'):
-              name, data = ll.split(' ', 1)
+          while not currline.startswith('NEXT'):
+              name, data = currline.split(' ', 1)
               data = data.split()
               data = [data[0], myfloat(data[1]), myfloat(data[2])]
               self.aperturelimitations[name.strip()] = data
 
-      elif ll.startswith('LINE'):
-          ll = next(f3)
-          if not ll.startswith('NEXT'):
-              lls = ll.split()
-              self.mode = lls[0]
-              self.number_of_blocks = int(lls[1])
-              self.ilin = int(lls[2])
-              self.ntco = int(lls[3])
-              self.E_I = myfloat(lls[4])
-              self.E_II = myfloat(lls[5])
-              ll = next(f3)
+      elif currline.startswith('LINE'):
+          currline = next(f3)
+          if not currline.startswith('NEXT'):
+              linesplit = currline.split()
+              self.mode = linesplit[0]
+              self.number_of_blocks = int(linesplit[1])
+              self.ilin = int(linesplit[2])
+              self.ntco = int(linesplit[3])
+              self.E_I = myfloat(linesplit[4])
+              self.E_II = myfloat(linesplit[5])
+              currline = next(f3)
           self.linenames = []
-          while not ll.startswith('NEXT'):
-              names = ll.split()
+          while not currline.startswith('NEXT'):
+              names = currline.split()
               self.linenames = self.linenames.append(names)
-              ll = next(f3)
+              currline = next(f3)
 
-      elif ll.startswith('MULT'):
-          ll = next(f3)
+      elif currline.startswith('MULT'):
+          currline = next(f3)
           try:
               self.mult
           except AttributeError:
               # self.mult not set (first occurence of MULT)
               self.mult = {}
-          name, data = ll.split(' ', 1)
+          name, data = currline.split(' ', 1)
           data = data.split()
           data = [myfloat(data[0]), myfloat(data[1])]
-          ll = next(f3)
-          while not ll.startswith('NEXT'):
-              lls = ll.split()
-              lls = [myfloat(item) for item in lls]
-              data.append(lls)
+          currline = next(f3)
+          while not currline.startswith('NEXT'):
+              linesplit = currline.split()
+              linesplit = [myfloat(item) for item in linesplit]
+              data.append(linesplit)
               self.mult[name.strip()] = data
-              ll = next(f3)
+              currline = next(f3)
 
-      elif ll.startswith('NORM'):
-          ll = next(f3)
-          if not ll.startswith('NEXT'):
-              lls = ll.split()
-              self.nord = int(lls[0])
-              self.nvar = int(lls[1])
+      elif currline.startswith('NORM'):
+          currline = next(f3)
+          if not currline.startswith('NEXT'):
+              linesplit = currline.split()
+              self.nord = int(linesplit[0])
+              self.nvar = int(linesplit[1])
 
-      elif ll.startswith('ORBI'):
-          ll = next(f3)
-          lls = ll.split()
-          self.sigmax  = myfloat(lls[0])
-          self.sigmay  = myfloat(lls[1])
-          self.ncorru  = int(lls[2])
-          self.ncorrep = int(lls[3])
-          ll = next(f3)
-          while not ll.startswith('NEXT'):
+      elif currline.startswith('ORBI'):
+          currline = next(f3)
+          linesplit = currline.split()
+          self.sigmax  = myfloat(linesplit[0])
+          self.sigmay  = myfloat(linesplit[1])
+          self.ncorru  = int(linesplit[2])
+          self.ncorrep = int(linesplit[3])
+          currline = next(f3)
+          while not currline.startswith('NEXT'):
               # not implemented, see manual at 3.5.4 Orbit Correction
-              ll = next(f3)
+              currline = next(f3)
 
-      elif ll.startswith('ORGA'):
-          ll = next(f3)
+      elif currline.startswith('ORGA'):
+          currline = next(f3)
           self.organisation_ran_numb = {}
           ii = 0
-          while not ll.startswith('NEXT'):
-              lls = ll.split()
+          while not currline.startswith('NEXT'):
+              linesplit = currline.split()
               name = 'orga' + str(ii)
-              self.organisation_ran_numb[name] = lls
-              ll = next(f3)
+              self.organisation_ran_numb[name] = linesplit
+              currline = next(f3)
               ii += 1
 
-      elif ll.startswith('POST'):
-          ll = next(f3).strip()
-          if not ll.startswith('NEXT'):
-              self.post_comment = ll
-              ll = next(f3).strip()
-          if not ll.startswith('NEXT'):
-              lls = ll.split()
-              self.post_iav = int(lls[0])
-              self.post_nstart = int(lls[1])
-              self.post_nstop = int(lls[2])
-              self.post_iwg = int(lls[3])
-              self.post_dphix = myfloat(lls[4])
-              self.post_dphiy = myfloat(lls[5])
-              self.post_iskip = int(lls[6])
-              self.post_iconv = int(lls[7])
-              self.post_imad = int(lls[8])
-              self.post_cma1 = myfloat(lls[9])
-              self.post_cma2 = myfloat(lls[10])
-              ll = next(f3).strip()
-          if not ll.startswith('NEXT'):
-              lls = ll.split()
-              self.post_Qx0 = myfloat(lls[0])
-              self.post_Qy0 = myfloat(lls[1])
-              self.post_ivox = int(lls[2])
-              self.post_ivoy = int(lls[3])
-              self.post_ires = int(lls[4])
-              self.post_dres = myfloat(lls[5])
-              self.post_ifh = int(lls[6])
-              self.post_dfft = myfloat(lls[7])
-              ll = next(f3).strip()
-          if not ll.startswith('NEXT'):
-              lls = ll.split()
-              self.post_kwtype = int(lls[0])
-              self.post_itf = int(lls[1])
-              self.post_icr = int(lls[2])
-              self.post_idis = int(lls[3])
-              self.post_icow = int(lls[4])
-              self.post_istw = int(lls[5])
-              self.post_iffw = int(lls[6])
-              self.post_nprint = int(lls[7])
-              self.post_ndafi = int(lls[8])
+      elif currline.startswith('POST'):
+          currline = next(f3).strip()
+          if not currline.startswith('NEXT'):
+              self.post_comment = currline
+              currline = next(f3).strip()
+          if not currline.startswith('NEXT'):
+              linesplit = currline.split()
+              self.post_iav = int(linesplit[0])
+              self.post_nstart = int(linesplit[1])
+              self.post_nstop = int(linesplit[2])
+              self.post_iwg = int(linesplit[3])
+              self.post_dphix = myfloat(linesplit[4])
+              self.post_dphiy = myfloat(linesplit[5])
+              self.post_iskip = int(linesplit[6])
+              self.post_iconv = int(linesplit[7])
+              self.post_imad = int(linesplit[8])
+              self.post_cma1 = myfloat(linesplit[9])
+              self.post_cma2 = myfloat(linesplit[10])
+              currline = next(f3).strip()
+          if not currline.startswith('NEXT'):
+              linesplit = currline.split()
+              self.post_Qx0 = myfloat(linesplit[0])
+              self.post_Qy0 = myfloat(linesplit[1])
+              self.post_ivox = int(linesplit[2])
+              self.post_ivoy = int(linesplit[3])
+              self.post_ires = int(linesplit[4])
+              self.post_dres = myfloat(linesplit[5])
+              self.post_ifh = int(linesplit[6])
+              self.post_dfft = myfloat(linesplit[7])
+              currline = next(f3).strip()
+          if not currline.startswith('NEXT'):
+              linesplit = currline.split()
+              self.post_kwtype = int(linesplit[0])
+              self.post_itf = int(linesplit[1])
+              self.post_icr = int(linesplit[2])
+              self.post_idis = int(linesplit[3])
+              self.post_icow = int(linesplit[4])
+              self.post_istw = int(linesplit[5])
+              self.post_iffw = int(linesplit[6])
+              self.post_nprint = int(linesplit[7])
+              self.post_ndafi = int(linesplit[8])
 
-      elif ll.startswith('PRIN'):
+      elif currline.startswith('PRIN'):
           self.printout = True
           next(f3)
 
-      elif ll.startswith('RESO'):
-          ll = next(f3)
-          if not ll.startswith('NEXT'):
-              lls = ll.split()
-              self.resonance_nr = int(lls[0])
-              self.resonance_n = int(lls[1])
-              self.resonance_ny1 = int(lls[2])
-              self.resonance_ny2 = int(lls[3])
-              self.resonance_ny3 = int(lls[4])
-              self.resonance_ip1 = int(lls[5])
-              self.resonance_ip2 = int(lls[6])
-              self.resonance_ip3 = int(lls[7])
-              ll = next(f3)
-          if not ll.startswith('NEXT'):
-              lls = ll.split()
-              self.resonance_nrs = int(lls[0])
-              self.resonance_ns1 = int(lls[1])
-              self.resonance_ns2 = int(lls[2])
-              self.resonance_ns3 = int(lls[3])
-              ll = next(f3)
+      elif currline.startswith('RESO'):
+          currline = next(f3)
+          if not currline.startswith('NEXT'):
+              linesplit = currline.split()
+              self.resonance_nr = int(linesplit[0])
+              self.resonance_n = int(linesplit[1])
+              self.resonance_ny1 = int(linesplit[2])
+              self.resonance_ny2 = int(linesplit[3])
+              self.resonance_ny3 = int(linesplit[4])
+              self.resonance_ip1 = int(linesplit[5])
+              self.resonance_ip2 = int(linesplit[6])
+              self.resonance_ip3 = int(linesplit[7])
+              currline = next(f3)
+          if not currline.startswith('NEXT'):
+              linesplit = currline.split()
+              self.resonance_nrs = int(linesplit[0])
+              self.resonance_ns1 = int(linesplit[1])
+              self.resonance_ns2 = int(linesplit[2])
+              self.resonance_ns3 = int(linesplit[3])
+              currline = next(f3)
           if not startswith('NEXT'):
-              lls = ll.split()
-              self.resonance_length = myfloat(lls[0])
-              self.resonance_Qx = myfloat(lls[1])
-              self.resonance_Qy = myfloat(lls[2])
-              self.resonance_Ax = myfloat(lls[3])
-              self.resonance_Ay = myfloat(lls[4])
-              ll = next(f3)
+              linesplit = currline.split()
+              self.resonance_length = myfloat(linesplit[0])
+              self.resonance_Qx = myfloat(linesplit[1])
+              self.resonance_Qy = myfloat(linesplit[2])
+              self.resonance_Ax = myfloat(linesplit[3])
+              self.resonance_Ay = myfloat(linesplit[4])
+              currline = next(f3)
           if not startswith('NEXT'):
-              lls = ll.split()
-              self.resonance_name1 = lls[0]
-              self.resonance_name2 = lls[1]
-              self.resonance_name3 = lls[2]
-              self.resonance_name4 = lls[3]
-              self.resonance_name5 = lls[4]
-              self.resonance_name6 = lls[5]
-              ll = next(f3)
+              linesplit = currline.split()
+              self.resonance_name1 = linesplit[0]
+              self.resonance_name2 = linesplit[1]
+              self.resonance_name3 = linesplit[2]
+              self.resonance_name4 = linesplit[3]
+              self.resonance_name5 = linesplit[4]
+              self.resonance_name6 = linesplit[5]
+              currline = next(f3)
           if not startswith('NEXT'):
-              lls = next(f3)
-              self.resonance_nch = int(lls[0])
-              self.resonance_name7 = lls[1]
-              self.resonance_name8 = lls[2]
-              ll = next(f3)
+              linesplit = next(f3)
+              self.resonance_nch = int(linesplit[0])
+              self.resonance_name7 = linesplit[1]
+              self.resonance_name8 = linesplit[2]
+              currline = next(f3)
           if not startswith('NEXT'):
-              lls = next(f3)
-              self.resonance_nq = int(lls[0])
-              self.resonance_name9 = lls[1]
-              self.resonance_name10 = lls[2]
-              self.resonance_Qx0 = myfloat(lls[3])
-              self.resonance_Qy0 = myfloat(lls[4])
+              linesplit = next(f3)
+              self.resonance_nq = int(linesplit[0])
+              self.resonance_name9 = linesplit[1]
+              self.resonance_name10 = linesplit[2]
+              self.resonance_Qx0 = myfloat(linesplit[3])
+              self.resonance_Qy0 = myfloat(linesplit[4])
 
-      elif ll.startswith('RIPP'):
-          ll = next(f3)
+      elif currline.startswith('RIPP'):
+          currline = next(f3)
           self.ripp = {}
-          while not ll.startswith('NEXT'):
-              name, settings = ll.split(' ', 1)
+          while not currline.startswith('NEXT'):
+              name, settings = currline.split(' ', 1)
               settings = settings.split()
               data = [myfloat(item) for item in settings[0:3]]
               data.append(int(settings[3]))
               self.ripp[name] = data
-              ll = next(f3)
+              currline = next(f3)
 
-      elif ll.startswith('SEAR'):
-          ll = next(f3)
-          if not ll.startswith('NEXT'):
-              lls = ll.split()
-              self.search_Qx = myfloat(lls[0])
-              self.search_Qy = myfloat(lls[1])
-              self.search_Ax = myfloat(lls[2])
-              self.search_Ay = myfloat(lls[3])
-              self.search_length = myfloat(lls[4])
-              ll = next(f3)
-          if not ll.startswith('NEXT'):
-              lls = ll.split()
-              self.search_npos = int(lls[0])
-              self.search_n = int(lls[1])
-              self.search_ny1 = int(lls[2])
-              self.search_ny2 = int(lls[3])
-              self.search_ny3 = int(lls[4])
-              self.search_ip1 = int(lls[5])
-              self.search_ip2 = int(lls[6])
-              self.search_ip3 = int(lls[7])
-              ll = next(f3)
-          if not ll.startswith('NEXT'):
-              self.sear_name = ll.split()
+      elif currline.startswith('SEAR'):
+          currline = next(f3)
+          if not currline.startswith('NEXT'):
+              linesplit = currline.split()
+              self.search_Qx = myfloat(linesplit[0])
+              self.search_Qy = myfloat(linesplit[1])
+              self.search_Ax = myfloat(linesplit[2])
+              self.search_Ay = myfloat(linesplit[3])
+              self.search_length = myfloat(linesplit[4])
+              currline = next(f3)
+          if not currline.startswith('NEXT'):
+              linesplit = currline.split()
+              self.search_npos = int(linesplit[0])
+              self.search_n = int(linesplit[1])
+              self.search_ny1 = int(linesplit[2])
+              self.search_ny2 = int(linesplit[3])
+              self.search_ny3 = int(linesplit[4])
+              self.search_ip1 = int(linesplit[5])
+              self.search_ip2 = int(linesplit[6])
+              self.search_ip3 = int(linesplit[7])
+              currline = next(f3)
+          if not currline.startswith('NEXT'):
+              self.sear_name = currline.split()
 
-      elif ll.startswith('SUBR'):
-          ll = next(f3)
-          if not ll.startswith('NEXT'):
-              lls = ll.split()
-              self.subres_n1 = int(lls[0])
-              self.subres_n2 = int(lls[1])
-              self.subres_Qx = myfloat(lls[2])
-              self.subres_Qy = myfloat(lls[3])
-              self.subres_Ax = myfloat(lls[4])
-              self.subres_Ay = myfloat(lls[5])
-              self.subres_Ip = int(lls[6])
-              self.subres_length = myfloat(lls[7])
+      elif currline.startswith('SUBR'):
+          currline = next(f3)
+          if not currline.startswith('NEXT'):
+              linesplit = currline.split()
+              self.subres_n1 = int(linesplit[0])
+              self.subres_n2 = int(linesplit[1])
+              self.subres_Qx = myfloat(linesplit[2])
+              self.subres_Qy = myfloat(linesplit[3])
+              self.subres_Ax = myfloat(linesplit[4])
+              self.subres_Ay = myfloat(linesplit[5])
+              self.subres_Ip = int(linesplit[6])
+              self.subres_length = myfloat(linesplit[7])
 
-      elif ll.startswith('SYNC'):
-          ll = next(f3).strip()
-          if not ll.startswith('NEXT'):
-              lls = ll.split()
-              self.harm  = myfloat(lls[0])
-              self.alc   = myfloat(lls[1])
-              self.u0    = myfloat(lls[2])
-              self.phag  = myfloat(lls[3])
-              self.tlen  = myfloat(lls[4])
-              self.pma   = myfloat(lls[5])
-              self.ition = int(lls[6])
-              if len(lls) == 8:
-                  self.dppoff = myfloat(lls[7])
-              ll = next(f3).strip()
-          if not ll.startswith('NEXT'):
-              lls = ll.split()
-              self.dpscor = myfloat(lls[0])
-              self.sigcor = myfloat(lls[1])
+      elif currline.startswith('SYNC'):
+          currline = next(f3).strip()
+          if not currline.startswith('NEXT'):
+              linesplit = currline.split()
+              self.harm  = myfloat(linesplit[0])
+              self.alc   = myfloat(linesplit[1])
+              self.u0    = myfloat(linesplit[2])
+              self.phag  = myfloat(linesplit[3])
+              self.tlen  = myfloat(linesplit[4])
+              self.pma   = myfloat(linesplit[5])
+              self.ition = int(linesplit[6])
+              if len(linesplit) == 8:
+                  self.dppoff = myfloat(linesplit[7])
+              currline = next(f3).strip()
+          if not currline.startswith('NEXT'):
+              linesplit = currline.split()
+              self.dpscor = myfloat(linesplit[0])
+              self.sigcor = myfloat(linesplit[1])
 
-      elif ll.startswith('TRAC'):
-          ll = next(f3).strip()
-          if not ll.startswith('NEXT'):
-              lls = ll.split()
-              self.numl  = int(lls[0])
-              self.numlr = int(lls[1])
-              self.napx  = int(lls[2])
-              self.amp1  = myfloat(lls[3])
-              self.amp0  = myfloat(lls[4])
-              self.ird   = int(lls[5])
-              self.imc   = int(lls[6])
-              ll = next(f3).strip()
-          if not ll.startswith('NEXT'):
-              lls = ll.split()
-              self.idy1  = int(lls[0])
-              self.idy2  = int(lls[1])
-              self.idfor = int(lls[2])
-              self.irew  = int(lls[3])
-              self.iclo6 = int(lls[4])
-              ll = next(f3).strip()
-          if not ll.startswith('NEXT'):
+      elif currline.startswith('TRAC'):
+          currline = next(f3).strip()
+          if not currline.startswith('NEXT'):
+              linesplit = currline.split()
+              self.numl  = int(linesplit[0])
+              self.numlr = int(linesplit[1])
+              self.napx  = int(linesplit[2])
+              self.amp1  = myfloat(linesplit[3])
+              self.amp0  = myfloat(linesplit[4])
+              self.ird   = int(linesplit[5])
+              self.imc   = int(linesplit[6])
+              currline = next(f3).strip()
+          if not currline.startswith('NEXT'):
+              linesplit = currline.split()
+              self.idy1  = int(linesplit[0])
+              self.idy2  = int(linesplit[1])
+              self.idfor = int(linesplit[2])
+              self.irew  = int(linesplit[3])
+              self.iclo6 = int(linesplit[4])
+              currline = next(f3).strip()
+          if not currline.startswith('NEXT'):
               vvv='nde1 nde2 nwr1 nwr2 nwr3 nwr4 ntwin ibidu iexact'
-              self.var_from_line(ll,vvv)
+              self.var_from_line(currline,vvv)
 
-      elif ll.startswith('TUNE'):
-          ll = next(f3)
-          if not ll.startswith('NEXT'):
-              lls = ll.split()
-              self.tune_name1 = lls[0]
-              self.tune_Qx = myfloat(lls[1])
-              if len(lls) == 3:
-                  self.tune_iqmod6 = int(lls[2])
-              ll = next(f3)
-          if not ll.startswith('NEXT'):
-              lls = ll.split()
-              self.tune_name2 = lls[0]
-              self.tune_Qy = myfloat(lls[1])
-              ll = next(f3)
-          if not ll.startswith('NEXT'):
-              lls = ll.split()
-              self.tune_name3 = lls[0]
-              self.tune_deltaQ = myfloat(lls[1])
-              ll = next(f3)
-          if not ll.startswith('NEXT'):
-              lls = ll.split()
-              self.tune_name4 = lls[0]
-              self.tune_name5 = lls[1]
+      elif currline.startswith('TUNE'):
+          currline = next(f3)
+          if not currline.startswith('NEXT'):
+              linesplit = currline.split()
+              self.tune_name1 = linesplit[0]
+              self.tune_Qx = myfloat(linesplit[1])
+              if len(linesplit) == 3:
+                  self.tune_iqmod6 = int(linesplit[2])
+              currline = next(f3)
+          if not currline.startswith('NEXT'):
+              linesplit = currline.split()
+              self.tune_name2 = linesplit[0]
+              self.tune_Qy = myfloat(linesplit[1])
+              currline = next(f3)
+          if not currline.startswith('NEXT'):
+              linesplit = currline.split()
+              self.tune_name3 = linesplit[0]
+              self.tune_deltaQ = myfloat(linesplit[1])
+              currline = next(f3)
+          if not currline.startswith('NEXT'):
+              linesplit = currline.split()
+              self.tune_name4 = linesplit[0]
+              self.tune_name5 = linesplit[1]
 
-      elif ll.startswith('TROM'):
-          ll = next(f3)
+      elif currline.startswith('TROM'):
+          currline = next(f3)
           self.trom = {}
-          while not ll.startswith('NEXT'):
-              name = ll
-              ll = next(f3)
-              cvar = [myfloat(item) for item in ll.split()]
-              ll = next(f3)
-              cvar = cvar + [myfloat(item) for item in ll.split()]
+          while not currline.startswith('NEXT'):
+              name = currline
+              currline = next(f3)
+              cvar = [myfloat(item) for item in currline.split()]
+              currline = next(f3)
+              cvar = cvar + [myfloat(item) for item in currline.split()]
               Mvar = []
               for ii in range(0, 12):
-                  ll = next(f3)
-                  Mvar = Mvar + [myfloat(item) for item in ll.split()]
+                  currline = next(f3)
+                  Mvar = Mvar + [myfloat(item) for item in currline.split()]
               data = cvar + Mvar
               self.trom[name] = data
-              ll = next(f3)
+              currline = next(f3)
 
       # BLOCKS FOUND IN FORT.2 (IF GEOM)
-      elif ll.startswith('SING'):
+      elif currline.startswith('SING'):
           self.single = {}
-          ll = next(f3).strip()
-          while not ll.startswith('NEXT'):
-              name, etype, data = ll.split(None, 2)
+          currline = next(f3).strip()
+          while not currline.startswith('NEXT'):
+              name, etype, data = currline.split(None, 2)
               data = [myfloat(dd) for dd in data.split()]
               self.single[name.strip()] = [int(etype)]+data
-              ll = next(f3).strip()
+              currline = next(f3).strip()
 
-      elif ll.startswith('BLOC'):
-          lls = next(f3).strip().split()
-          self.mper = lls[0]
-          self.msym = [int(ii) for ii in lls[1:]]
-          ll = next(f3).strip()
+      elif currline.startswith('BLOC'):
+          linesplit = next(f3).strip().split()
+          self.mper = linesplit[0]
+          self.msym = [int(ii) for ii in linesplit[1:]]
+          currline = next(f3).strip()
           self.blocks = {}
-          while not ll.startswith('NEXT'):
-              lls = ll.split()
-              self.blocks[lls[0]] = lls[1:]
-              ll = next(f3).strip()
+          while not currline.startswith('NEXT'):
+              linesplit = currline.split()
+              self.blocks[linesplit[0]] = linesplit[1:]
+              currline = next(f3).strip()
 
-      elif ll.startswith('STRU'):
+      elif currline.startswith('STRU'):
           # this is the sequence of single elements and blocks
           self.struct = []
-          ll = next(f3).strip()
-          while not ll.startswith('NEXT'):
-              self.struct.extend(ll.split())
-              ll = next(f3).strip()
+          currline = next(f3).strip()
+          while not currline.startswith('NEXT'):
+              self.struct.extend(currline.split())
+              currline = next(f3).strip()
 
     # end of the while loop (finished reading fort.2 and fort.3)
 
