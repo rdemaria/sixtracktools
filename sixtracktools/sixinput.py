@@ -312,7 +312,7 @@ class SixTrackInput(object):
       elif ll.startswith('BEAM'):
           ll = next(f3).strip()
           if ll.startswith('EXPERT'):
-              print 'I am expert :-)'
+              print('I am expert :-)')
           else:
               lls = ll.split()
               vvv='partnum emitnx emitny sigz sige ibeco ibtyp lhc ibbc'
