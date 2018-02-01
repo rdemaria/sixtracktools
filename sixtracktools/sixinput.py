@@ -277,6 +277,8 @@ class SixTrackInput(object):
   def __init__(self,basedir='.'):
     self.basedir=basedir
     self.filenames={}
+    
+    # Prepare list of filenames
     for n in [2,3,8,16]:
       fname='fort.%d'%n
       ffname=os.path.join(basedir,fname)
@@ -285,7 +287,9 @@ class SixTrackInput(object):
          if not os.path.isfile(ffname):
            ffname=None
       self.filenames[fname]=ffname
-    f3 = getlines(self.filenames['fort.3'])
+      
+    # Read f3
+    f3 = getlines(self.filenames['fort.3']) # f3 is an iterator
     while 1:
       try:
           ll = next(f3).strip()
@@ -296,28 +300,32 @@ class SixTrackInput(object):
       if ll.startswith('FREE') or ll.startswith('GEOM'):
           self.title = ll.split(' ',1)[1]
           self.geom = ll[:4]
-
       elif ll.startswith('ENDE'):
           if self.geom == 'GEOM':
+              # continue with f2 if necessary
               f3 = getlines(self.filenames['fort.2'])
           else:
               break
-
-      # BLOCKS FOR FORT.3 IN ALPHABETICAL ORDER
+      
+      # BLOCKS OF INFORMATION FOR FROM FORT.3 IN ALPHABETICAL ORDER
+      
       elif ll.startswith('BEAM'):
           ll = next(f3).strip()
-          lls = ll.split()
-          vvv='partnum emitnx emitny sigz sige ibeco ibtyp lhc ibbc'
-          self.var_from_line(ll,vvv)
-          # loop over all beam-beam elements
-          ll = next(f3).strip()
-          self.bbelements = {}
-          while not ll.startswith('NEXT'):
-              name, data = ll.split(' ', 1)
-              data = data.split()
-              data = [int(data[0]), float(data[1]), float(data[2])]
-              self.bbelements[name.strip()] = data
-              ll = next(f3).strip()
+          if ll.startswith('EXPERT'):
+              print 'I am expert :-)'
+          else:
+              lls = ll.split()
+              vvv='partnum emitnx emitny sigz sige ibeco ibtyp lhc ibbc'
+              self.var_from_line(ll,vvv)
+              # loop over all beam-beam elements
+              ll = f3.next().strip()
+              self.bbelements = {}
+              while not ll.startswith('NEXT'):
+                  name, data = ll.split(' ', 1)
+                  data = data.split()
+                  data = [int(data[0]), float(data[1]), float(data[2])]
+                  self.bbelements[name.strip()] = data
+                  ll = f3.next().strip()
 
       elif ll.startswith('CHRO'):
           ll = next(f3)
@@ -788,26 +796,43 @@ class SixTrackInput(object):
               ll = next(f3).strip()
 
       elif ll.startswith('STRU'):
+          # this is the sequence of single elements and blocks
           self.struct = []
           ll = next(f3).strip()
           while not ll.startswith('NEXT'):
               self.struct.extend(ll.split())
+<<<<<<< HEAD
               ll = next(f3).strip()
+=======
+              ll = f3.next().strip()
+
+    # end of the while loop (finished reading fort.2 and fort.3)
+
+>>>>>>> 377b5ba7e1295010481007d1e14986d82b2969f8
     self.add_default_vars()
     #self.add_struct_count()
-    for nnn,data in self.mult.items():
+    if hasattr(self,'mult'):
+      for nnn,data in self.mult.items():
         rref,bend = data[:2]
         bnrms,bn,anrms,an=zip(*data[2:])
         self.mult[nnn]=(rref,bend,bn,an,bnrms,anrms)
     if 'fort.16' in self.filenames:
+       # multipoles
        self.multblock={}
        for name,bn,an in readf16(self.filenames['fort.16']):
           self.multblock.setdefault(name,[]).append((bn,an))
     if 'fort.8' in self.filenames:
+       # alignment errors
        self.align={}
        for name,(dx,dy,tilt) in readf8(self.filenames['fort.8']):
            self.align.setdefault(name,[]).append((dx,dy,tilt))
+<<<<<<< HEAD
     print(self.prettyprint(full=False))
+=======
+    print self.prettyprint(full=False)
+    
+    
+>>>>>>> 377b5ba7e1295010481007d1e14986d82b2969f8
   def add_default_vars(self):
       for name,var in self.variables.items():
           if not hasattr(self,name):
@@ -842,11 +867,14 @@ class SixTrackInput(object):
            out.append("%-20s %d"%(nnn,len(getattr(self,nnn))))
     return '\n'.join(out)
   def get_knl(self,name,count):
-      bnv,anv=self.multblock[name][count]
-      rref,bend,bn,an,bnrms,anrms=self.mult[name]
-      cstr,cref=self.single[name][1:3]
-      knl=bn_rel(bnv,bn,rref,bend,-1)
-      ksl=bn_rel(anv,an,rref,bend,1)
+      if name in self.multblock:
+        bnv,anv=self.multblock[name][count]
+        rref,bend,bn,an,bnrms,anrms=self.mult[name]
+        cstr,cref=self.single[name][1:3]
+        knl=bn_rel(bnv,bn,rref,bend,-1)
+        ksl=bn_rel(anv,an,rref,bend,1)
+      else:
+        knl=[self.single[name][1]];ksl=[]
       return knl,ksl
   def compare_madmult(s,sixname,sixcount,err,madname):
       knlmad,kslmad=err.errors_kvector(np.where(err//madname)[0][0],20)
@@ -900,6 +928,8 @@ class SixTrackInput(object):
           elif etype==11:
               knl,ksl=self.get_knl(nnn,ccc)
               hxl=0; hyl=0;l=0
+              # beaware of the case of thick bend
+              # see beambeam example where mbw has the length
               if d3==-1:
                   hxl=-d1; l=d2
                   knl[0]=hxl
