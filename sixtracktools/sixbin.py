@@ -128,7 +128,7 @@ if __name__=='__main__':
     basedir=sys.argv[1]
   else:
     basedir='.'
-  print basedir
+  print(basedir)
   head,part=opendir(basedir)
 
 
