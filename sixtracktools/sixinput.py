@@ -93,7 +93,7 @@ class SixTrackInput(object):
   classes=dict(
     drift=namedtuple('drift','length'),
     multipole=namedtuple('multipole','knl ksl hxl hyl length'),
-    cavity=namedtuple('cavity','volt freq lag'),
+    cavity =namedtuple('cavity','voltage frequency lag'),
     align=namedtuple('align','dx dy tilt'),
     block=namedtuple('block','elems'),
     beambeam4d = namedtuple('beambeam4d','Sigma_xx Sigma_yy h_sep v_sep strengthratio'),
