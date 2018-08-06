@@ -98,16 +98,17 @@ class Variable(object):
 
 class SixTrackInput(object):
     classes = dict(
-        drift=namedtuple('drift', 'length'),
-        multipole=namedtuple('multipole', 'knl ksl hxl hyl length'),
-        cavity=namedtuple('cavity', 'voltage frequency lag'),
-        align=namedtuple('align', 'dx dy tilt'),
-        block=namedtuple('block', 'elems'),
-        beambeam4d=namedtuple(
-            'beambeam4d', 'Sigma_xx Sigma_yy h_sep v_sep strengthratio'),
-        beambeam6d=namedtuple('beambeam6d', 'ibsix xang xplane h_sep v_sep ' +
-                              'Sigma_xx Sigma_xxp Sigma_xpxp Sigma_yy Sigma_yyp ' +
-                              'Sigma_ypyp Sigma_xy Sigma_xyp Sigma_xpy Sigma_xpyp strengthratio')
+        Drift=namedtuple('Drift', 'length'),
+        Multipole=namedtuple('Multipole', 'knl ksl hxl hyl length'),
+        Cavity=namedtuple('Cavity', 'voltage frequency lag'),
+        XYShift=namedtuple('XYShift', 'dx dy'),
+        SRotation=namedtuple('SRotation', 'tilt'),
+        Line=namedtuple('Line', 'elems'),
+        BeamBeam4D=namedtuple(
+            'BeamBeam4D', 'sigma_xx sigma_yy h_sep v_sep strengthratio'),
+        BeamBeam6D=namedtuple('BeamBeam6D', 'ibsix xang xplane h_sep v_sep ' +
+                              'sigma_xx sigma_xxp sigma_xpxp sigma_yy sigma_yyp ' +
+                              'sigma_ypyp sigma_xy sigma_xyp sigma_xpy sigma_xpyp strengthratio')
     )
     variables = OrderedDict(
         [('title', Variable('', 'START', 'Study title')),
@@ -348,10 +349,10 @@ class SixTrackInput(object):
                             thesedata = list(map(float,
                                                  linesplit[2:] + linesplit1 + linesplit2))
                             #~ import pdb; pdb.set_trace()
-                            self.bbelements[name] = self.classes['beambeam6d'](
+                            self.bbelements[name] = self.classes['BeamBeam6D'](
                                 *([nslices]+thesedata))
                         elif nslices == 0:
-                            self.bbelements[name] = self.classes['beambeam4d'](
+                            self.bbelements[name] = self.classes['BeamBeam4D'](
                                 *list(map(float, linesplit[2:])))
                         else:
                             raise ValueError('ibsix must be >=0!')
@@ -951,13 +952,14 @@ class SixTrackInput(object):
         iconv = []
         names = []
         rest = []
-        drift = convert['drift']
-        multipole = convert['multipole']
-        cavity = convert['cavity']
-        align = convert['align']
-        block = convert['block']
-        beambeam4d = convert['beambeam4d']
-        beambeam6d = convert['beambeam6d']
+        Drift = convert['Drift']
+        Multipole = convert['Multipole']
+        Cavity = convert['Cavity']
+        XYShift = convert['XYShift']
+        SRotation = convert['SRotation']
+        Line  = convert['Line']
+        BeamBeam4D = convert['BeamBeam4D']
+        BeamBeam6D = convert['BeamBeam6D']
         exclude = False
         for nnn in self.iter_struct():
             exclude = False
@@ -965,7 +967,7 @@ class SixTrackInput(object):
             etype, d1, d2, d3, d4, d5, d6 = self.single[nnn]
             elem = None
             if etype in [0, 25]:
-                elem = drift(d3)
+                elem = Drift(length=d3)
                 if d3 > 0:
                     exclude = True
             elif abs(etype) in [1, 2, 3, 4, 5, 7, 8, 9, 10]:
@@ -977,7 +979,7 @@ class SixTrackInput(object):
                 ksl = [0]*nn
                 if sign == 1:
                     knl, ksl = ksl, knl
-                elem = multipole(knl, ksl, 0, 0, 0)
+                elem = Multipole(knl=knl, ksl=ksl, hxl=0, hyl=0, length=0)
             elif etype == 11:
                 knl, ksl = self.get_knl(nnn, ccc)
                 hxl = 0
@@ -993,7 +995,7 @@ class SixTrackInput(object):
                     hyl = d1
                     l = d2
                     ksl[0] = hxl
-                elem = multipole(knl, ksl, hxl, hyl, l)
+                elem = Multipole(knl=knl, ksl=ksl, hxl=hxl, hyl=hyl, length=l)
             elif etype == 12:
                 # e0=self.initialconditions[-1]
                 # p0c=np.sqrt(e0**2-self.pma**2)
@@ -1001,13 +1003,13 @@ class SixTrackInput(object):
                 v = d1*1e6
                 freq = d2*clight/self.tlen
                 # print(v,freq)
-                elem = cavity(v, freq, lag=180-d3)
+                elem = Cavity(voltage=v, frequency=freq, lag=180-d3)
             elif etype == 20:
                 thisbb = self.bbelements[nnn]
-                if type(thisbb) is self.classes['beambeam4d']:
-                    elem = beambeam4d(*thisbb)
-                elif type(thisbb) is self.classes['beambeam6d']:
-                    elem = beambeam6d(*thisbb)
+                if type(thisbb) is self.classes['BeamBeam4D']:
+                    elem = BeamBeam4D(*thisbb)
+                elif type(thisbb) is self.classes['BeamBeam6D']:
+                    elem = BeamBeam6D(*thisbb)
                 else:
                     raise ValueError('What?!')
             else:
@@ -1018,12 +1020,22 @@ class SixTrackInput(object):
                     tilt = tilt*180e-3/pi
                     dx *= 1e-3
                     dy *= 1e-3
-                    names.append(nnn+'_alignpre')
-                    elems.append(align(dx, dy, tilt))
+                    hasshift=abs(dx)+abs(dy)>0
+                    hastilt=abs(tilt)>0
+                    if hasshift:
+                      names.append(nnn+'_preshift')
+                      elems.append(XYShift(dx=dx, dy=dy))
+                    if hastilt:
+                      names.append(nnn+'_pretilt')
+                      elems.append(SRotation(tilt=tilt))
                     names.append(nnn)
                     elems.append(elem)
-                    names.append(nnn+'_alignpost')
-                    elems.append(align(-dx, -dy, -tilt))
+                    if hastilt:
+                      names.append(nnn+'_pretilt')
+                      elems.append(SRotation(tilt=-tilt))
+                    if hasshift:
+                      names.append(nnn+'_preshift')
+                      elems.append(XYShift(dx=-dx, dy=-dy))
                 else:
                     elems.append(elem)
                     names.append(nnn)
@@ -1031,9 +1043,9 @@ class SixTrackInput(object):
                     iconv.append(icount)
                 icount += 1
             count[nnn] = ccc+1
-        newelems = [dict(i._asdict()) for i in elems]
+        #newelems = [dict(i._asdict()) for i in elems]
         types = [i.__class__.__name__ for i in elems]
-        return list(zip(names, types, newelems)), rest, iconv
+        return list(zip(names, types, elems)), rest, iconv
 
 
 if __name__ == '__main__':

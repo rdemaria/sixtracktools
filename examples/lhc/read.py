@@ -4,8 +4,8 @@ six =sixtracktools.SixTrackInput('.')
 line,rest, iconv =six.expand_struct()
 
 
-beam=sixtracktools.SixDump3('dump3.dat')
-fb=beam.get_full_beam()
+beam=sixtracktools.SixDump101('res/dump3.dat')
+fb=beam.get_minimal_beam()
 
 print("# SixTrackLib Elements")
 for ic,el in enumerate(line):
