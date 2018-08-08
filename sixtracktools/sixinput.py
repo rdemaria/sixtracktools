@@ -102,7 +102,7 @@ class SixTrackInput(object):
         Multipole=namedtuple('Multipole', 'knl ksl hxl hyl length'),
         Cavity=namedtuple('Cavity', 'voltage frequency lag'),
         XYShift=namedtuple('XYShift', 'dx dy'),
-        SRotation=namedtuple('SRotation', 'tilt'),
+        SRotation=namedtuple('SRotation', 'angle'),
         Line=namedtuple('Line', 'elems'),
         BeamBeam4D=namedtuple(
             'BeamBeam4D', 'sigma_xx sigma_yy h_sep v_sep strengthratio'),
@@ -1025,17 +1025,21 @@ class SixTrackInput(object):
                     if hasshift:
                       names.append(nnn+'_preshift')
                       elems.append(XYShift(dx=dx, dy=dy))
+                      icount += 1
                     if hastilt:
                       names.append(nnn+'_pretilt')
-                      elems.append(SRotation(tilt=tilt))
+                      elems.append(SRotation(angle=tilt))
+                      icount += 1
                     names.append(nnn)
                     elems.append(elem)
                     if hastilt:
                       names.append(nnn+'_pretilt')
-                      elems.append(SRotation(tilt=-tilt))
+                      elems.append(SRotation(angle=-tilt))
+                      icount += 1
                     if hasshift:
                       names.append(nnn+'_preshift')
                       elems.append(XYShift(dx=-dx, dy=-dy))
+                      icount += 1
                 else:
                     elems.append(elem)
                     names.append(nnn)
