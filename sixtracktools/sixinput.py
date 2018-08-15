@@ -348,12 +348,11 @@ class SixTrackInput(object):
                             linesplit2 = currline.split()
                             thesedata = list(map(float,
                                                  linesplit[2:] + linesplit1 + linesplit2))
-                            #~ import pdb; pdb.set_trace()
                             self.bbelements[name] = self.classes['BeamBeam6D'](
                                 *([nslices]+thesedata))
                         elif nslices == 0:
-                            self.bbelements[name] = self.classes['BeamBeam4D'](
-                                *list(map(float, linesplit[2:])))
+                            thesedata = list(map(float, linesplit[2:]))
+                            self.bbelements[name] = self.classes['BeamBeam4D'](*thesedata)
                         else:
                             raise ValueError('ibsix must be >=0!')
                         currline = next(f3).strip()
@@ -1007,9 +1006,9 @@ class SixTrackInput(object):
             elif etype == 20:
                 thisbb = self.bbelements[nnn]
                 if type(thisbb) is self.classes['BeamBeam4D']:
-                    elem = BeamBeam4D(*thisbb)
+                    elem = BeamBeam4D(**thisbb._asdict())
                 elif type(thisbb) is self.classes['BeamBeam6D']:
-                    elem = BeamBeam6D(*thisbb)
+                    elem = BeamBeam6D(**thisbb._asdict())
                 else:
                     raise ValueError('What?!')
             else:
