@@ -6,6 +6,7 @@ import os
 import gzip
 from collections import OrderedDict, namedtuple
 from math import factorial
+from scipy.constants import e as qe
 
 import numpy as np
 
@@ -104,8 +105,10 @@ class SixTrackInput(object):
         XYShift=namedtuple('XYShift', 'dx dy'),
         SRotation=namedtuple('SRotation', 'angle'),
         Line=namedtuple('Line', 'elems'),
+        # BeamBeam4D=namedtuple(
+        #     'BeamBeam4D', 'sigma_xx sigma_yy h_sep v_sep strengthratio'),
         BeamBeam4D=namedtuple(
-            'BeamBeam4D', 'sigma_xx sigma_yy h_sep v_sep strengthratio'),
+            'BeamBeam4D', ' '.join(['q_part', 'N_part', 'sigma_x', 'sigma_y', 'beta_s', 'min_sigma_diff', 'Delta_x', 'Delta_y'])),        
         BeamBeam6D=namedtuple('BeamBeam6D', 'ibsix xang xplane h_sep v_sep ' +
                               'sigma_xx sigma_xxp sigma_xpxp sigma_yy sigma_yyp ' +
                               'sigma_ypyp sigma_xy sigma_xyp sigma_xpy sigma_xpyp strengthratio')
@@ -351,14 +354,26 @@ class SixTrackInput(object):
                             self.bbelements[name] = self.classes['BeamBeam6D'](
                                 *([nslices]+thesedata))
                         elif nslices == 0:
-                            thesedata = list(map(float, linesplit[2:]))
-                            self.bbelements[name] = self.classes['BeamBeam4D'](*thesedata)
+                            ### BB4D
+                            # what I get: sigma_xx sigma_yy h_sep v_sep strengthratio
+                            # what I need:'q_part', 'N_part', 'sigma_x', 'sigma_y', 'beta_s', 'min_sigma_diff', 'Delta_x', 'Delta_y'
+                            st_sigma_xx, st_sigma_yy, st_h_sep, st_v_sep, st_strengthratio = tuple(map(float, linesplit[2:]))
+                            q_part = qe
+                            N_part = self.partnum*st_strengthratio
+                            sigma_x = np.sqrt(st_sigma_xx)*1e-3
+                            sigma_y = np.sqrt(st_sigma_yy)*1e-3
+                            beta_s = 1.
+                            min_sigma_diff = 1e-10
+                            Delta_x = st_h_sep*1e-3
+                            Delta_y = st_v_sep*1e-3
+                            self.bbelements[name] = self.classes['BeamBeam4D'](q_part, N_part, sigma_x, sigma_y, beta_s, min_sigma_diff, Delta_x, Delta_y)
                         else:
                             raise ValueError('ibsix must be >=0!')
                         currline = next(f3).strip()
 
                 else:
-                    linesplit = currline.split()
+                    raise ValueError('Only EXPERT implemented for now!')
+                    '''linesplit = currline.split()
                     vvv = 'partnum emitnx emitny sigz sige ibeco ibtyp lhc ibbc'
                     self.var_from_line(currline, vvv)
                     # loop over all beam-beam elements
@@ -370,7 +385,7 @@ class SixTrackInput(object):
                         data = data.split()
                         data = [int(data[0]), float(data[1]), float(data[2])]
                         self.bbelements[name.strip()] = data
-                        currline = next(f3).strip()
+                        currline = next(f3).strip()'''
 
             elif currline.startswith('CHRO'):
                 currline = next(f3)
