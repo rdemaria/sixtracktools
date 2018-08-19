@@ -364,8 +364,8 @@ class SixTrackInput(object):
                             sigma_y = np.sqrt(st_sigma_yy)*1e-3
                             beta_s = 1.
                             min_sigma_diff = 1e-10
-                            Delta_x = st_h_sep*1e-3
-                            Delta_y = st_v_sep*1e-3
+                            Delta_x = -st_h_sep*1e-3
+                            Delta_y = -st_v_sep*1e-3
                             self.bbelements[name] = self.classes['BeamBeam4D'](q_part, N_part, sigma_x, sigma_y, beta_s, min_sigma_diff, Delta_x, Delta_y)
                         else:
                             raise ValueError('ibsix must be >=0!')
