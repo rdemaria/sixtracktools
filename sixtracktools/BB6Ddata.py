@@ -1,5 +1,7 @@
 import numpy as np
 
+from . import slicing
+from . import boost
 
 class ParBoost(object):
     #it is practically a struct
@@ -18,6 +20,54 @@ class ParBoost(object):
            self.salpha,
            self.calpha]
         return np.array(buf, dtype=np.float64)
+
+
+class Sigmas(object):
+    def __init__(self, Sig_11_0, Sig_12_0, Sig_13_0,
+                Sig_14_0, Sig_22_0, Sig_23_0, Sig_24_0,
+                Sig_33_0, Sig_34_0, Sig_44_0):
+        
+        self.Sig_11_0 = Sig_11_0
+        self.Sig_12_0 = Sig_12_0
+        self.Sig_13_0 = Sig_13_0
+        self.Sig_14_0 = Sig_14_0
+        self.Sig_22_0 = Sig_22_0
+        self.Sig_23_0 = Sig_23_0
+        self.Sig_24_0 = Sig_24_0
+        self.Sig_33_0 = Sig_33_0
+        self.Sig_34_0 = Sig_34_0
+        self.Sig_44_0 = Sig_44_0
+    
+    def tobuffer(self):
+        buf = [
+        self.Sig_11_0,
+        self.Sig_12_0,
+        self.Sig_13_0,
+        self.Sig_14_0,
+        self.Sig_22_0,
+        self.Sig_23_0,
+        self.Sig_24_0,
+        self.Sig_33_0,
+        self.Sig_34_0,
+        self.Sig_44_0]
+        return np.array(buf, dtype=np.float64)
+        
+        
+def boost_sigmas(Sigma_0, cphi):
+    Sigma_0_boosted = Sigmas(
+        Sigma_0.Sig_11_0 ,
+        Sigma_0.Sig_12_0/cphi,
+        Sigma_0.Sig_13_0,
+        Sigma_0.Sig_14_0/cphi,
+        Sigma_0.Sig_22_0/cphi/cphi,
+        Sigma_0.Sig_23_0/cphi,
+        Sigma_0.Sig_24_0/cphi/cphi,
+        Sigma_0.Sig_33_0,
+        Sigma_0.Sig_34_0/cphi,
+        Sigma_0.Sig_44_0/cphi/cphi)
+    return Sigma_0_boosted
+        
+
 
 
 
@@ -108,15 +158,15 @@ def BB6D_init(q_part, N_part_tot, sigmaz, N_slices, min_sigma_diff, threshold_si
                 enabled):
                     
     # Prepare data for Lorentz transformation
-    parboost = boost.ParBoost(phi=phi, alpha=alpha)
+    parboost = ParBoost(phi=phi, alpha=alpha)
 
     # Prepare data with strong beam shape
-    Sigmas_0 = psm.Sigmas(Sig_11_0, Sig_12_0, Sig_13_0, 
+    Sigmas_0 = Sigmas(Sig_11_0, Sig_12_0, Sig_13_0, 
                         Sig_14_0, Sig_22_0, Sig_23_0, 
                         Sig_24_0, Sig_33_0, Sig_34_0, Sig_44_0)
                         
     # Boost strong beam shape
-    Sigmas_0_star = psm.boost_sigmas(Sigmas_0, parboost.cphi)
+    Sigmas_0_star = boost_sigmas(Sigmas_0, parboost.cphi)
 
     # Generate info about slices
     z_centroids, _, N_part_per_slice = slicing.constant_charge_slicing_gaussian(N_part_tot, sigmaz, N_slices)

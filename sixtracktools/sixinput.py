@@ -8,6 +8,8 @@ from collections import OrderedDict, namedtuple
 from math import factorial
 from scipy.constants import e as qe
 
+from . import BB6Ddata
+
 import numpy as np
 
 clight = 299792458
@@ -105,13 +107,19 @@ class SixTrackInput(object):
         XYShift=namedtuple('XYShift', 'dx dy'),
         SRotation=namedtuple('SRotation', 'angle'),
         Line=namedtuple('Line', 'elems'),
-        # BeamBeam4D=namedtuple(
-        #     'BeamBeam4D', 'sigma_xx sigma_yy h_sep v_sep strengthratio'),
         BeamBeam4D=namedtuple(
             'BeamBeam4D', ' '.join(['q_part', 'N_part', 'sigma_x', 'sigma_y', 'beta_s', 'min_sigma_diff', 'Delta_x', 'Delta_y'])),        
-        BeamBeam6D=namedtuple('BeamBeam6D', 'ibsix xang xplane h_sep v_sep ' +
-                              'sigma_xx sigma_xxp sigma_xpxp sigma_yy sigma_yyp ' +
-                              'sigma_ypyp sigma_xy sigma_xyp sigma_xpy sigma_xpyp strengthratio')
+        # BeamBeam6D=namedtuple('BeamBeam6D', ' '.join([
+        #         'q_part N_part_tot sigmaz N_slices min_sigma_diff threshold_singular',
+        #         'phi alpha', 
+        #         'Sig_11_0 Sig_12_0 Sig_13_0', 
+        #         'Sig_14_0 Sig_22_0 Sig_23_0', 
+        #         'Sig_24_0 Sig_33_0 Sig_34_0 Sig_44_0'
+        #         'delta_x delta_y'
+        #         'x_CO px_C0 y_CO py_CO sigma_CO delta_CO'
+        #         'Dx_sub Dpx_sub Dy_sub Dpy_sub Dsigma_sub Ddelta_sub'
+        #         'enabled']))
+        BeamBeam6D=namedtuple('BeamBeam6D', 'BB6D_data')
     )
     variables = OrderedDict(
         [('title', Variable('', 'START', 'Study title')),
@@ -338,6 +346,9 @@ class SixTrackInput(object):
                     vvv = 'partnum emitnx emitny sigz sige ibeco ibtyp lhc ibbc'
                     self.var_from_line(currline, vvv)
 
+                    if self.ibeco != 1:
+                        raise ValueError('Only ibeco=1 is tested!')
+
                     self.bbelements = {}
                     currline = next(f3).strip()
                     while not currline.startswith('NEXT'):
@@ -351,8 +362,58 @@ class SixTrackInput(object):
                             linesplit2 = currline.split()
                             thesedata = list(map(float,
                                                  linesplit[2:] + linesplit1 + linesplit2))
+
+                            (st_ibsix, st_xang, st_xplane, st_h_sep, st_v_sep,
+                                st_sigma_xx, st_sigma_xxp, st_sigma_xpxp, st_sigma_yy, st_sigma_yyp,
+                                st_sigma_ypyp, st_sigma_xy, st_sigma_xyp, st_sigma_xpy, st_sigma_xpyp, 
+                                st_strengthratio) = tuple([nslices]+thesedata)
+
+                            q_part = qe
+                            N_part_tot = self.partnum*st_strengthratio
+                            sigmaz = self.sigz
+                            N_slices = st_ibsix
+                            min_sigma_diff = 1e-10
+                            threshold_singular = 1e-10
+                            phi = st_xang
+                            alpha = st_xplane
+                            Sig_11_0 = st_sigma_xx*1e-6
+                            Sig_12_0 = st_sigma_xxp*1e-6
+                            Sig_13_0 = st_sigma_xy*1e-6
+                            Sig_14_0 = st_sigma_xyp*1e-6
+                            Sig_22_0 = st_sigma_xpxp*1e-6
+                            Sig_23_0 = st_sigma_xpy*1e-6
+                            Sig_24_0 = st_sigma_xpyp*1e-6
+                            Sig_33_0 = st_sigma_yy*1e-6
+                            Sig_34_0 = st_sigma_yyp*1e-3
+                            Sig_44_0 = st_sigma_ypyp*1e-3
+                            delta_x = st_h_sep*1e-3 
+                            delta_y = st_v_sep*1e-3 
+                            x_CO = 0.
+                            px_C0 = 0.
+                            y_CO = 0. 
+                            py_CO = 0. 
+                            sigma_CO = 0. 
+                            delta_CO = 0.
+                            Dx_sub = 0.
+                            Dpx_sub = 0. 
+                            Dy_sub = 0.
+                            Dpy_sub = 0. 
+                            Dsigma_sub = 0. 
+                            Ddelta_sub = 0.
+                            enabled = False
+
+                            bb6data = BB6Ddata.BB6D_init(q_part, N_part_tot, sigmaz, N_slices, min_sigma_diff, threshold_singular,
+                                phi, alpha, 
+                                Sig_11_0, Sig_12_0, Sig_13_0, 
+                                Sig_14_0, Sig_22_0, Sig_23_0, 
+                                Sig_24_0, Sig_33_0, Sig_34_0, Sig_44_0,
+                                delta_x, delta_y,
+                                x_CO, px_C0, y_CO, py_CO, sigma_CO, delta_CO,
+                                Dx_sub, Dpx_sub, Dy_sub, Dpy_sub, Dsigma_sub, Ddelta_sub,
+                                enabled)
+
                             self.bbelements[name] = self.classes['BeamBeam6D'](
-                                *([nslices]+thesedata))
+                                bb6data)
                         elif nslices == 0:
                             ### BB4D
                             # what I get: sigma_xx sigma_yy h_sep v_sep strengthratio
