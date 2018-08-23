@@ -386,10 +386,10 @@ class SixTrackInput(object):
                             Sig_33_0 = st_sigma_yy*1e-6
                             Sig_34_0 = st_sigma_yyp*1e-3
                             Sig_44_0 = st_sigma_ypyp*1e-3
-                            delta_x = st_h_sep*1e-3 
-                            delta_y = st_v_sep*1e-3 
+                            delta_x = -st_h_sep*1e-3 
+                            delta_y = -st_v_sep*1e-3 
                             x_CO = 0.
-                            px_C0 = 0.
+                            px_CO = 0.
                             y_CO = 0. 
                             py_CO = 0. 
                             sigma_CO = 0. 
@@ -408,7 +408,7 @@ class SixTrackInput(object):
                                 Sig_14_0, Sig_22_0, Sig_23_0, 
                                 Sig_24_0, Sig_33_0, Sig_34_0, Sig_44_0,
                                 delta_x, delta_y,
-                                x_CO, px_C0, y_CO, py_CO, sigma_CO, delta_CO,
+                                x_CO, px_CO, y_CO, py_CO, sigma_CO, delta_CO,
                                 Dx_sub, Dpx_sub, Dy_sub, Dpy_sub, Dsigma_sub, Ddelta_sub,
                                 enabled)
 

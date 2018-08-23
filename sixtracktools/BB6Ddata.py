@@ -85,7 +85,7 @@ class BB6D_Data(object):
             x_slices_star, y_slices_star, sigma_slices_star,
             min_sigma_diff, threshold_singular,
             delta_x, delta_y,
-            x_CO, px_C0, y_CO, py_CO, sigma_CO, delta_CO,
+            x_CO, px_CO, y_CO, py_CO, sigma_CO, delta_CO,
             Dx_sub, Dpx_sub, Dy_sub, Dpy_sub, Dsigma_sub, Ddelta_sub,
             enabled):
                 
@@ -103,7 +103,7 @@ class BB6D_Data(object):
         self.delta_x = delta_x
         self.delta_y = delta_y
         self.x_CO  = x_CO
-        self.px_C0 = px_C0
+        self.px_CO = px_CO
         self.y_CO = y_CO
         self.py_CO = py_CO
         self.sigma_CO = py_CO
@@ -153,7 +153,7 @@ def BB6D_init(q_part, N_part_tot, sigmaz, N_slices, min_sigma_diff, threshold_si
                 Sig_14_0, Sig_22_0, Sig_23_0, 
                 Sig_24_0, Sig_33_0, Sig_34_0, Sig_44_0,
                 delta_x, delta_y,
-                x_CO, px_C0, y_CO, py_CO, sigma_CO, delta_CO,
+                x_CO, px_CO, y_CO, py_CO, sigma_CO, delta_CO,
                 Dx_sub, Dpx_sub, Dy_sub, Dpy_sub, Dsigma_sub, Ddelta_sub,
                 enabled):
                     
@@ -183,7 +183,7 @@ def BB6D_init(q_part, N_part_tot, sigmaz, N_slices, min_sigma_diff, threshold_si
                    
     bb6d_data = BB6D_Data(q_part, parboost, Sigmas_0_star, N_slices, 
        N_part_per_slice, x_slices_star, y_slices_star, sigma_slices_star, min_sigma_diff, threshold_singular,
-       delta_x, delta_y, x_CO, px_C0, y_CO, py_CO, sigma_CO, delta_CO,
+       delta_x, delta_y, x_CO, px_CO, y_CO, py_CO, sigma_CO, delta_CO,
        Dx_sub, Dpx_sub, Dy_sub, Dpy_sub, Dsigma_sub, Ddelta_sub,
        enabled)
                 
