@@ -44,41 +44,47 @@ def bn_rel(bn16, bn3, r0, d0, sign):
 
 
 def readf16(fn):
-    if fn.endswith('.gz'):
-        fh = gzip.open(fn)
+    if fn:
+        if fn.endswith('.gz'):
+            fh = gzip.open(fn)
+        else:
+            fh = open(fn)
+        out = []
+        state = 'label'
+        for thisl in fh:
+            if state == 'label':
+                bn = []
+                an = []
+                name = thisl.strip()
+                state = 'data'
+            elif state == 'data':
+                ddd = map(myfloat, thisl.split())
+                if len(bn) < 20:
+                    bn.extend(ddd)
+                else:
+                    an.extend(ddd)
+                if len(an) == 20:
+                    state = 'label'
+                    out.append((name, bn, an))
+        return out
     else:
-        fh = open(fn)
-    out = []
-    state = 'label'
-    for thisl in fh:
-        if state == 'label':
-            bn = []
-            an = []
-            name = thisl.strip()
-            state = 'data'
-        elif state == 'data':
-            ddd = map(myfloat, thisl.split())
-            if len(bn) < 20:
-                bn.extend(ddd)
-            else:
-                an.extend(ddd)
-            if len(an) == 20:
-                state = 'label'
-                out.append((name, bn, an))
-    return out
+        return None
 
 
 def readf8(fn):
-    if fn.endswith('.gz'):
-        fh = gzip.open(fn)
+    if fn:
+        if fn.endswith('.gz'):
+            fh = gzip.open(fn)
+        else:
+            fh = open(fn)
+        out = []
+        for thisl in fh:
+            name, rest = thisl.split(None, 1)
+            data = map(myfloat, rest.split())
+            out.append((name, data))
+        return out
     else:
-        fh = open(fn)
-    out = []
-    for thisl in fh:
-        name, rest = thisl.split(None, 1)
-        data = map(myfloat, rest.split())
-        out.append((name, data))
-    return out
+        return None
 
 
 class Variable(object):
@@ -384,8 +390,8 @@ class SixTrackInput(object):
                             Sig_23_0 = st_sigma_xpy*1e-6
                             Sig_24_0 = st_sigma_xpyp*1e-6
                             Sig_33_0 = st_sigma_yy*1e-6
-                            Sig_34_0 = st_sigma_yyp*1e-3
-                            Sig_44_0 = st_sigma_ypyp*1e-3
+                            Sig_34_0 = st_sigma_yyp*1e-6
+                            Sig_44_0 = st_sigma_ypyp*1e-6
                             delta_x = -st_h_sep*1e-3 
                             delta_y = -st_v_sep*1e-3 
                             x_CO = 0.
@@ -400,7 +406,7 @@ class SixTrackInput(object):
                             Dpy_sub = 0. 
                             Dsigma_sub = 0. 
                             Ddelta_sub = 0.
-                            enabled = False
+                            enabled = True
 
                             bb6data = BB6Ddata.BB6D_init(q_part, N_part_tot, sigmaz, N_slices, min_sigma_diff, threshold_singular,
                                 phi, alpha, 
@@ -935,15 +941,17 @@ class SixTrackInput(object):
                 bnrms, bn, anrms, an = zip(*data[2:])
                 self.mult[nnn] = (rref, bend, bn, an, bnrms, anrms)
         if 'fort.16' in self.filenames:
-            # multipoles
             self.multblock = {}
-            for name, bn, an in readf16(self.filenames['fort.16']):
-                self.multblock.setdefault(name, []).append((bn, an))
+            if self.filenames['fort.16']:
+                # multipoles
+                for name, bn, an in readf16(self.filenames['fort.16']):
+                    self.multblock.setdefault(name, []).append((bn, an))
         if 'fort.8' in self.filenames:
-            # alignment errors
             self.align = {}
-            for name, (dx, dy, tilt) in readf8(self.filenames['fort.8']):
-                self.align.setdefault(name, []).append((dx, dy, tilt))
+            if self.filenames['fort.8']:
+                # alignment errors
+                for name, (dx, dy, tilt) in readf8(self.filenames['fort.8']):
+                    self.align.setdefault(name, []).append((dx, dy, tilt))
         print(self.prettyprint(full=False))
 
     def add_default_vars(self):
@@ -1039,7 +1047,9 @@ class SixTrackInput(object):
         for nnn in self.iter_struct():
             exclude = False
             ccc = count.setdefault(nnn, 0)
-            etype, d1, d2, d3, d4, d5, d6 = self.single[nnn]
+            templist = self.single[nnn]
+            templist += (7-len(templist))*[0.]
+            etype, d1, d2, d3, d4, d5, d6 = templist
             elem = None
             if etype in [0, 25]:
                 elem = Drift(length=d3)
