@@ -96,7 +96,7 @@ class Variable(object):
             return self.vtype(value)
 
 
-class SixTrackInput(object):
+class SixInput(object):
     classes = dict(
         Drift=namedtuple('Drift', 'length'),
         Multipole=namedtuple('Multipole', 'knl ksl hxl hyl length'),
@@ -303,7 +303,8 @@ class SixTrackInput(object):
                 ffname += '.gz'
                 if not os.path.isfile(ffname):
                     ffname = None
-            self.filenames[fname] = ffname
+            if ffname is not None:
+                self.filenames[fname] = ffname
 
         # Read f3
         f3 = getlines(self.filenames['fort.3'])  # f3 is an iterator
@@ -531,10 +532,11 @@ class SixTrackInput(object):
                     linesplit = currline.split()
                     self.mode = linesplit[0]
                     self.number_of_blocks = int(linesplit[1])
-                    self.ilin = int(linesplit[2])
-                    self.ntco = int(linesplit[3])
-                    self.E_I = myfloat(linesplit[4])
-                    self.E_II = myfloat(linesplit[5])
+                    if len(linesplit)>2:
+                      self.ilin = int(linesplit[2])
+                      self.ntco = int(linesplit[3])
+                      self.E_I = myfloat(linesplit[4])
+                      self.E_II = myfloat(linesplit[5])
                     currline = next(f3)
                 self.linenames = []
                 while not currline.startswith('NEXT'):
@@ -885,7 +887,7 @@ class SixTrackInput(object):
         self.struct = out
 
     def __repr__(self):
-        return "<SixTrackInput %s>" % self.basedir
+        return "<SixInput %s>" % self.basedir
 
     def prettyprint(self, full=False):
         """Pretty print input definitions which are different from default
@@ -1057,4 +1059,4 @@ if __name__ == '__main__':
         basedir = sys.argv[1]
     else:
         basedir = "."
-    s = SixTrackInput(basedir)
+    s = SixInput(basedir)

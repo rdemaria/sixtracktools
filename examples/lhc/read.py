@@ -1,6 +1,6 @@
 import sixtracktools
 
-six =sixtracktools.SixTrackInput('.')
+six =sixtracktools.SixInput('.')
 line,rest, iconv =six.expand_struct()
 
 
