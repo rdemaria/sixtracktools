@@ -860,14 +860,14 @@ class SixInput(object):
                 rref, bend = data[:2]
                 bnrms, bn, anrms, an = zip(*data[2:])
                 self.mult[nnn] = (rref, bend, bn, an, bnrms, anrms)
+        self.multblock = {}
         if 'fort.16' in self.filenames:
             # multipoles
-            self.multblock = {}
             for name, bn, an in readf16(self.filenames['fort.16']):
                 self.multblock.setdefault(name, []).append((bn, an))
+        self.align = {}
         if 'fort.8' in self.filenames:
             # alignment errors
-            self.align = {}
             for name, (dx, dy, tilt) in readf8(self.filenames['fort.8']):
                 self.align.setdefault(name, []).append((dx, dy, tilt))
         print(self.prettyprint(full=False))
@@ -962,10 +962,17 @@ class SixInput(object):
         BeamBeam4D = convert['BeamBeam4D']
         BeamBeam6D = convert['BeamBeam6D']
         exclude = False
+        # add special elenents
+        if 'CAV' in self.iter_struct():
+            self.single['CAV'] =  [12*self.ition, self.u0, self.harm, 0]
         for nnn in self.iter_struct():
             exclude = False
             ccc = count.setdefault(nnn, 0)
-            etype, d1, d2, d3, d4, d5, d6 = self.single[nnn]
+            if len(self.single[nnn])==7:
+                etype, d1, d2, d3, d4, d5, d6 = self.single[nnn]
+            else:
+                etype, d1, d2, d3, = self.single[nnn]
+                d4, d5, d6 = None, None, None
             elem = None
             if etype in [0, 25]:
                 elem = Drift(length=d3)
@@ -995,7 +1002,7 @@ class SixInput(object):
                 elif d3 == -2:
                     hyl = d1
                     l = d2
-                    ksl[0] = hxl
+                    ksl[0] = hyl
                 elem = Multipole(knl=knl, ksl=ksl, hxl=hxl, hyl=hyl, length=l)
             elif etype == 12:
                 # e0=self.initialconditions[-1]
