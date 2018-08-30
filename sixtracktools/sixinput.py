@@ -44,47 +44,41 @@ def bn_rel(bn16, bn3, r0, d0, sign):
 
 
 def readf16(fn):
-    if fn:
-        if fn.endswith('.gz'):
-            fh = gzip.open(fn)
-        else:
-            fh = open(fn)
-        out = []
-        state = 'label'
-        for thisl in fh:
-            if state == 'label':
-                bn = []
-                an = []
-                name = thisl.strip()
-                state = 'data'
-            elif state == 'data':
-                ddd = map(myfloat, thisl.split())
-                if len(bn) < 20:
-                    bn.extend(ddd)
-                else:
-                    an.extend(ddd)
-                if len(an) == 20:
-                    state = 'label'
-                    out.append((name, bn, an))
-        return out
+    if fn.endswith('.gz'):
+        fh = gzip.open(fn)
     else:
-        return None
+        fh = open(fn)
+    out = []
+    state = 'label'
+    for thisl in fh:
+        if state == 'label':
+            bn = []
+            an = []
+            name = thisl.strip()
+            state = 'data'
+        elif state == 'data':
+            ddd = map(myfloat, thisl.split())
+            if len(bn) < 20:
+                bn.extend(ddd)
+            else:
+                an.extend(ddd)
+            if len(an) == 20:
+                state = 'label'
+                out.append((name, bn, an))
+    return out
 
 
 def readf8(fn):
-    if fn:
-        if fn.endswith('.gz'):
-            fh = gzip.open(fn)
-        else:
-            fh = open(fn)
-        out = []
-        for thisl in fh:
-            name, rest = thisl.split(None, 1)
-            data = map(myfloat, rest.split())
-            out.append((name, data))
-        return out
+    if fn.endswith('.gz'):
+        fh = gzip.open(fn)
     else:
-        return None
+        fh = open(fn)
+    out = []
+    for thisl in fh:
+        name, rest = thisl.split(None, 1)
+        data = map(myfloat, rest.split())
+        out.append((name, data))
+    return out
 
 
 class Variable(object):
@@ -1060,7 +1054,6 @@ class SixInput(object):
             else:
                 etype, d1, d2, d3, = self.single[nnn]
                 d4, d5, d6 = None, None, None
-
             elem = None
             if etype in [0, 25]:
                 elem = Drift(length=d3)
