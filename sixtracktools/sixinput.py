@@ -6,6 +6,9 @@ import os
 import gzip
 from collections import OrderedDict, namedtuple
 from math import factorial
+from scipy.constants import e as qe
+
+from . import BB6Ddata
 
 import numpy as np
 
@@ -41,41 +44,47 @@ def bn_rel(bn16, bn3, r0, d0, sign):
 
 
 def readf16(fn):
-    if fn.endswith('.gz'):
-        fh = gzip.open(fn)
+    if fn:
+        if fn.endswith('.gz'):
+            fh = gzip.open(fn)
+        else:
+            fh = open(fn)
+        out = []
+        state = 'label'
+        for thisl in fh:
+            if state == 'label':
+                bn = []
+                an = []
+                name = thisl.strip()
+                state = 'data'
+            elif state == 'data':
+                ddd = map(myfloat, thisl.split())
+                if len(bn) < 20:
+                    bn.extend(ddd)
+                else:
+                    an.extend(ddd)
+                if len(an) == 20:
+                    state = 'label'
+                    out.append((name, bn, an))
+        return out
     else:
-        fh = open(fn)
-    out = []
-    state = 'label'
-    for thisl in fh:
-        if state == 'label':
-            bn = []
-            an = []
-            name = thisl.strip()
-            state = 'data'
-        elif state == 'data':
-            ddd = map(myfloat, thisl.split())
-            if len(bn) < 20:
-                bn.extend(ddd)
-            else:
-                an.extend(ddd)
-            if len(an) == 20:
-                state = 'label'
-                out.append((name, bn, an))
-    return out
+        return None
 
 
 def readf8(fn):
-    if fn.endswith('.gz'):
-        fh = gzip.open(fn)
+    if fn:
+        if fn.endswith('.gz'):
+            fh = gzip.open(fn)
+        else:
+            fh = open(fn)
+        out = []
+        for thisl in fh:
+            name, rest = thisl.split(None, 1)
+            data = map(myfloat, rest.split())
+            out.append((name, data))
+        return out
     else:
-        fh = open(fn)
-    out = []
-    for thisl in fh:
-        name, rest = thisl.split(None, 1)
-        data = map(myfloat, rest.split())
-        out.append((name, data))
-    return out
+        return None
 
 
 class Variable(object):
@@ -105,10 +114,18 @@ class SixInput(object):
         SRotation=namedtuple('SRotation', 'angle'),
         Line=namedtuple('Line', 'elems'),
         BeamBeam4D=namedtuple(
-            'BeamBeam4D', 'sigma_xx sigma_yy h_sep v_sep strengthratio'),
-        BeamBeam6D=namedtuple('BeamBeam6D', 'ibsix xang xplane h_sep v_sep ' +
-                              'sigma_xx sigma_xxp sigma_xpxp sigma_yy sigma_yyp ' +
-                              'sigma_ypyp sigma_xy sigma_xyp sigma_xpy sigma_xpyp strengthratio')
+            'BeamBeam4D', ' '.join(['q_part', 'N_part', 'sigma_x', 'sigma_y', 'beta_s', 'min_sigma_diff', 'Delta_x', 'Delta_y'])),        
+        # BeamBeam6D=namedtuple('BeamBeam6D', ' '.join([
+        #         'q_part N_part_tot sigmaz N_slices min_sigma_diff threshold_singular',
+        #         'phi alpha', 
+        #         'Sig_11_0 Sig_12_0 Sig_13_0', 
+        #         'Sig_14_0 Sig_22_0 Sig_23_0', 
+        #         'Sig_24_0 Sig_33_0 Sig_34_0 Sig_44_0'
+        #         'delta_x delta_y'
+        #         'x_CO px_C0 y_CO py_CO sigma_CO delta_CO'
+        #         'Dx_sub Dpx_sub Dy_sub Dpy_sub Dsigma_sub Ddelta_sub'
+        #         'enabled']))
+        BeamBeam6D=namedtuple('BeamBeam6D', 'BB6D_data')
     )
     variables = OrderedDict(
         [('title', Variable('', 'START', 'Study title')),
@@ -336,6 +353,9 @@ class SixInput(object):
                     vvv = 'partnum emitnx emitny sigz sige ibeco ibtyp lhc ibbc'
                     self.var_from_line(currline, vvv)
 
+                    if self.ibeco != 1:
+                        raise ValueError('Only ibeco=1 is tested!')
+
                     self.bbelements = {}
                     currline = next(f3).strip()
                     while not currline.startswith('NEXT'):
@@ -349,17 +369,79 @@ class SixInput(object):
                             linesplit2 = currline.split()
                             thesedata = list(map(float,
                                                  linesplit[2:] + linesplit1 + linesplit2))
+
+                            (st_ibsix, st_xang, st_xplane, st_h_sep, st_v_sep,
+                                st_sigma_xx, st_sigma_xxp, st_sigma_xpxp, st_sigma_yy, st_sigma_yyp,
+                                st_sigma_ypyp, st_sigma_xy, st_sigma_xyp, st_sigma_xpy, st_sigma_xpyp, 
+                                st_strengthratio) = tuple([nslices]+thesedata)
+
+                            q_part = qe
+                            N_part_tot = self.partnum*st_strengthratio
+                            sigmaz = self.sigz
+                            N_slices = st_ibsix
+                            min_sigma_diff = 1e-10
+                            threshold_singular = 1e-10
+                            phi = st_xang
+                            alpha = st_xplane
+                            Sig_11_0 = st_sigma_xx*1e-6
+                            Sig_12_0 = st_sigma_xxp*1e-6
+                            Sig_13_0 = st_sigma_xy*1e-6
+                            Sig_14_0 = st_sigma_xyp*1e-6
+                            Sig_22_0 = st_sigma_xpxp*1e-6
+                            Sig_23_0 = st_sigma_xpy*1e-6
+                            Sig_24_0 = st_sigma_xpyp*1e-6
+                            Sig_33_0 = st_sigma_yy*1e-6
+                            Sig_34_0 = st_sigma_yyp*1e-6
+                            Sig_44_0 = st_sigma_ypyp*1e-6
+                            delta_x = -st_h_sep*1e-3 
+                            delta_y = -st_v_sep*1e-3 
+                            x_CO = 0.
+                            px_CO = 0.
+                            y_CO = 0. 
+                            py_CO = 0. 
+                            sigma_CO = 0. 
+                            delta_CO = 0.
+                            Dx_sub = 0.
+                            Dpx_sub = 0. 
+                            Dy_sub = 0.
+                            Dpy_sub = 0. 
+                            Dsigma_sub = 0. 
+                            Ddelta_sub = 0.
+                            enabled = True
+
+                            bb6data = BB6Ddata.BB6D_init(q_part, N_part_tot, sigmaz, N_slices, min_sigma_diff, threshold_singular,
+                                phi, alpha, 
+                                Sig_11_0, Sig_12_0, Sig_13_0, 
+                                Sig_14_0, Sig_22_0, Sig_23_0, 
+                                Sig_24_0, Sig_33_0, Sig_34_0, Sig_44_0,
+                                delta_x, delta_y,
+                                x_CO, px_CO, y_CO, py_CO, sigma_CO, delta_CO,
+                                Dx_sub, Dpx_sub, Dy_sub, Dpy_sub, Dsigma_sub, Ddelta_sub,
+                                enabled)
+
                             self.bbelements[name] = self.classes['BeamBeam6D'](
-                                *([nslices]+thesedata))
+                                bb6data)
                         elif nslices == 0:
-                            thesedata = list(map(float, linesplit[2:]))
-                            self.bbelements[name] = self.classes['BeamBeam4D'](*thesedata)
+                            ### BB4D
+                            # what I get: sigma_xx sigma_yy h_sep v_sep strengthratio
+                            # what I need:'q_part', 'N_part', 'sigma_x', 'sigma_y', 'beta_s', 'min_sigma_diff', 'Delta_x', 'Delta_y'
+                            st_sigma_xx, st_sigma_yy, st_h_sep, st_v_sep, st_strengthratio = tuple(map(float, linesplit[2:]))
+                            q_part = qe
+                            N_part = self.partnum*st_strengthratio
+                            sigma_x = np.sqrt(st_sigma_xx)*1e-3
+                            sigma_y = np.sqrt(st_sigma_yy)*1e-3
+                            beta_s = 1.
+                            min_sigma_diff = 1e-10
+                            Delta_x = -st_h_sep*1e-3
+                            Delta_y = -st_v_sep*1e-3
+                            self.bbelements[name] = self.classes['BeamBeam4D'](q_part, N_part, sigma_x, sigma_y, beta_s, min_sigma_diff, Delta_x, Delta_y)
                         else:
                             raise ValueError('ibsix must be >=0!')
                         currline = next(f3).strip()
 
                 else:
-                    linesplit = currline.split()
+                    raise ValueError('Only EXPERT implemented for now!')
+                    '''linesplit = currline.split()
                     vvv = 'partnum emitnx emitny sigz sige ibeco ibtyp lhc ibbc'
                     self.var_from_line(currline, vvv)
                     # loop over all beam-beam elements
@@ -371,7 +453,7 @@ class SixInput(object):
                         data = data.split()
                         data = [int(data[0]), float(data[1]), float(data[2])]
                         self.bbelements[name.strip()] = data
-                        currline = next(f3).strip()
+                        currline = next(f3).strip()'''
 
             elif currline.startswith('CHRO'):
                 currline = next(f3)
@@ -978,6 +1060,7 @@ class SixInput(object):
             else:
                 etype, d1, d2, d3, = self.single[nnn]
                 d4, d5, d6 = None, None, None
+
             elem = None
             if etype in [0, 25]:
                 elem = Drift(length=d3)
