@@ -993,7 +993,7 @@ class SixInput(object):
             knl = bn_rel(bnv, bn, rref, bend, -1)
             ksl = bn_rel(anv, an, rref, bend, 1)
         else:
-            etype,d1,d2,d3=self.single[name]
+            etype,d1,d2,d3=self.single[name][:4]
             if d3==-2:
                 knl=[]
                 ksl=[d1]
