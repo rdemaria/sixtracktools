@@ -3,7 +3,7 @@ sys.path.append('../../')#containst sixtracktools
 
 import sixtracktools
 
-six = sixtracktools.SixTrackInput('.')
+six = sixtracktools.SixInput('.')
 line, rest, iconv =six.expand_struct()
 
 # Check for beam beam

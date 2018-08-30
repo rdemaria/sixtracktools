@@ -105,7 +105,7 @@ class Variable(object):
             return self.vtype(value)
 
 
-class SixTrackInput(object):
+class SixInput(object):
     classes = dict(
         Drift=namedtuple('Drift', 'length'),
         Multipole=namedtuple('Multipole', 'knl ksl hxl hyl length'),
@@ -320,7 +320,8 @@ class SixTrackInput(object):
                 ffname += '.gz'
                 if not os.path.isfile(ffname):
                     ffname = None
-            self.filenames[fname] = ffname
+            if ffname is not None:
+                self.filenames[fname] = ffname
 
         # Read f3
         f3 = getlines(self.filenames['fort.3'])  # f3 is an iterator
@@ -613,10 +614,11 @@ class SixTrackInput(object):
                     linesplit = currline.split()
                     self.mode = linesplit[0]
                     self.number_of_blocks = int(linesplit[1])
-                    self.ilin = int(linesplit[2])
-                    self.ntco = int(linesplit[3])
-                    self.E_I = myfloat(linesplit[4])
-                    self.E_II = myfloat(linesplit[5])
+                    if len(linesplit)>2:
+                      self.ilin = int(linesplit[2])
+                      self.ntco = int(linesplit[3])
+                      self.E_I = myfloat(linesplit[4])
+                      self.E_II = myfloat(linesplit[5])
                     currline = next(f3)
                 self.linenames = []
                 while not currline.startswith('NEXT'):
@@ -940,18 +942,16 @@ class SixTrackInput(object):
                 rref, bend = data[:2]
                 bnrms, bn, anrms, an = zip(*data[2:])
                 self.mult[nnn] = (rref, bend, bn, an, bnrms, anrms)
+        self.multblock = {}
         if 'fort.16' in self.filenames:
-            self.multblock = {}
-            if self.filenames['fort.16']:
-                # multipoles
-                for name, bn, an in readf16(self.filenames['fort.16']):
-                    self.multblock.setdefault(name, []).append((bn, an))
+            # multipoles
+            for name, bn, an in readf16(self.filenames['fort.16']):
+                self.multblock.setdefault(name, []).append((bn, an))
+        self.align = {}
         if 'fort.8' in self.filenames:
-            self.align = {}
-            if self.filenames['fort.8']:
-                # alignment errors
-                for name, (dx, dy, tilt) in readf8(self.filenames['fort.8']):
-                    self.align.setdefault(name, []).append((dx, dy, tilt))
+            # alignment errors
+            for name, (dx, dy, tilt) in readf8(self.filenames['fort.8']):
+                self.align.setdefault(name, []).append((dx, dy, tilt))
         print(self.prettyprint(full=False))
 
     def add_default_vars(self):
@@ -969,7 +969,7 @@ class SixTrackInput(object):
         self.struct = out
 
     def __repr__(self):
-        return "<SixTrackInput %s>" % self.basedir
+        return "<SixInput %s>" % self.basedir
 
     def prettyprint(self, full=False):
         """Pretty print input definitions which are different from default
@@ -999,8 +999,13 @@ class SixTrackInput(object):
             knl = bn_rel(bnv, bn, rref, bend, -1)
             ksl = bn_rel(anv, an, rref, bend, 1)
         else:
-            knl = [self.single[name][1]]
-            ksl = []
+            etype,d1,d2,d3=self.single[name]
+            if d3==-2:
+                knl=[]
+                ksl=[d1]
+            else:
+                knl = [d1]
+                ksl = []
         return knl, ksl
 
     def compare_madmult(s, sixname, sixcount, err, madname):
@@ -1044,12 +1049,18 @@ class SixTrackInput(object):
         BeamBeam4D = convert['BeamBeam4D']
         BeamBeam6D = convert['BeamBeam6D']
         exclude = False
+        # add special elenents
+        if 'CAV' in self.iter_struct():
+            self.single['CAV'] =  [12*self.ition, self.u0, self.harm, 0]
         for nnn in self.iter_struct():
             exclude = False
             ccc = count.setdefault(nnn, 0)
-            templist = self.single[nnn]
-            templist += (7-len(templist))*[0.]
-            etype, d1, d2, d3, d4, d5, d6 = templist
+            if len(self.single[nnn])==7:
+                etype, d1, d2, d3, d4, d5, d6 = self.single[nnn]
+            else:
+                etype, d1, d2, d3, = self.single[nnn]
+                d4, d5, d6 = None, None, None
+
             elem = None
             if etype in [0, 25]:
                 elem = Drift(length=d3)
@@ -1077,9 +1088,9 @@ class SixTrackInput(object):
                     l = d2
                     knl[0] = hxl
                 elif d3 == -2:
-                    hyl = d1
+                    hyl = -d1 #strange sign!!!
                     l = d2
-                    ksl[0] = hxl
+                    ksl[0] = hyl
                 elem = Multipole(knl=knl, ksl=ksl, hxl=hxl, hyl=hyl, length=l)
             elif etype == 12:
                 # e0=self.initialconditions[-1]
@@ -1143,4 +1154,4 @@ if __name__ == '__main__':
         basedir = sys.argv[1]
     else:
         basedir = "."
-    s = SixTrackInput(basedir)
+    s = SixInput(basedir)
