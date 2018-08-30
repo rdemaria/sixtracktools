@@ -917,8 +917,13 @@ class SixInput(object):
             knl = bn_rel(bnv, bn, rref, bend, -1)
             ksl = bn_rel(anv, an, rref, bend, 1)
         else:
-            knl = [self.single[name][1]]
-            ksl = []
+            etype,d1,d2,d3=self.single[name]
+            if d3==-2:
+                knl=[]
+                ksl=[d1]
+            else:
+                knl = [d1]
+                ksl = []
         return knl, ksl
 
     def compare_madmult(s, sixname, sixcount, err, madname):
@@ -1000,7 +1005,7 @@ class SixInput(object):
                     l = d2
                     knl[0] = hxl
                 elif d3 == -2:
-                    hyl = d1
+                    hyl = -d1 #strange sign!!!
                     l = d2
                     ksl[0] = hyl
                 elem = Multipole(knl=knl, ksl=ksl, hxl=hxl, hyl=hyl, length=l)
