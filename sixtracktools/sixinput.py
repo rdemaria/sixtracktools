@@ -349,6 +349,8 @@ class SixInput(object):
 
                     if self.ibeco != 1:
                         raise ValueError('Only ibeco=1 is tested!')
+                    if self.ibbc != 1:
+                        raise ValueError('Only ibbc=1 is tested!')
 
                     self.bbelements = {}
                     currline = next(f3).strip()
@@ -373,8 +375,8 @@ class SixInput(object):
                             N_part_tot = self.partnum*st_strengthratio
                             sigmaz = self.sigz
                             N_slices = st_ibsix
-                            min_sigma_diff = 1e-10
-                            threshold_singular = 1e-10
+                            min_sigma_diff = 1e-18
+                            threshold_singular = 1e-18
                             phi = st_xang
                             alpha = st_xplane
                             Sig_11_0 = st_sigma_xx*1e-6
