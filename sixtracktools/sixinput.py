@@ -8,8 +8,6 @@ from collections import OrderedDict, namedtuple
 from math import factorial
 from scipy.constants import e as qe
 
-from . import BB6Ddata
-
 import numpy as np
 
 clight = 299792458
