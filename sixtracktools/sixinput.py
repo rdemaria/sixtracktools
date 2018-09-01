@@ -375,8 +375,8 @@ class SixInput(object):
                             N_part_tot = self.partnum*st_strengthratio
                             sigmaz = self.sigz
                             N_slices = st_ibsix
-                            min_sigma_diff = 1e-18
-                            threshold_singular = 1e-18
+                            min_sigma_diff = 1e-28
+                            threshold_singular = 1e-28
                             phi = st_xang
                             alpha = st_xplane
                             Sig_11_0 = st_sigma_xx*1e-6
