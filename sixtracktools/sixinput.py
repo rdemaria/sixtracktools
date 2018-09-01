@@ -407,16 +407,6 @@ class SixInput(object):
                             Ddelta_sub = 0.
                             enabled = True
 
-                            # bb6data = BB6Ddata.BB6D_init(q_part, N_part_tot, sigmaz, N_slices, min_sigma_diff, threshold_singular,
-                            #     phi, alpha, 
-                            #     Sig_11_0, Sig_12_0, Sig_13_0, 
-                            #     Sig_14_0, Sig_22_0, Sig_23_0, 
-                            #     Sig_24_0, Sig_33_0, Sig_34_0, Sig_44_0,
-                            #     delta_x, delta_y,
-                            #     x_CO, px_CO, y_CO, py_CO, sigma_CO, delta_CO,
-                            #     Dx_sub, Dpx_sub, Dy_sub, Dpy_sub, Dsigma_sub, Ddelta_sub,
-                            #     enabled)
-
                             self.bbelements[name] = self.classes['BeamBeam6D'](
                                 q_part, N_part_tot, sigmaz, N_slices, min_sigma_diff, threshold_singular,
                                 phi, alpha, 
