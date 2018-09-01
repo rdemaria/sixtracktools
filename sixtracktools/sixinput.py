@@ -349,8 +349,8 @@ class SixInput(object):
 
                     if self.ibeco != 1:
                         raise ValueError('Only ibeco=1 is tested!')
-                    if self.ibbc != 1:
-                        raise ValueError('Only ibbc=1 is tested!')
+                    # if self.ibbc != 1:
+                    #     raise ValueError('Only ibbc=1 is tested!')
 
                     self.bbelements = {}
                     currline = next(f3).strip()
@@ -389,6 +389,12 @@ class SixInput(object):
                             Sig_33_0 = st_sigma_yy*1e-6
                             Sig_34_0 = st_sigma_yyp*1e-6
                             Sig_44_0 = st_sigma_ypyp*1e-6
+                            if self.ibbc==0:
+                                # No linear coupling
+                                Sig_13_0 = 0.
+                                Sig_14_0 = 0.
+                                Sig_23_0 = 0.
+                                Sig_24_0 = 0.
                             delta_x = -st_h_sep*1e-3 
                             delta_y = -st_v_sep*1e-3 
                             x_CO = 0.
