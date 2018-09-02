@@ -8,8 +8,6 @@ from collections import OrderedDict, namedtuple
 from math import factorial
 from scipy.constants import e as qe
 
-from . import BB6Ddata
-
 import numpy as np
 
 clight = 299792458
@@ -109,17 +107,15 @@ class SixInput(object):
         Line=namedtuple('Line', 'elems'),
         BeamBeam4D=namedtuple(
             'BeamBeam4D', ' '.join(['q_part', 'N_part', 'sigma_x', 'sigma_y', 'beta_s', 'min_sigma_diff', 'Delta_x', 'Delta_y'])),        
-        # BeamBeam6D=namedtuple('BeamBeam6D', ' '.join([
-        #         'q_part N_part_tot sigmaz N_slices min_sigma_diff threshold_singular',
-        #         'phi alpha', 
-        #         'Sig_11_0 Sig_12_0 Sig_13_0', 
-        #         'Sig_14_0 Sig_22_0 Sig_23_0', 
-        #         'Sig_24_0 Sig_33_0 Sig_34_0 Sig_44_0'
-        #         'delta_x delta_y'
-        #         'x_CO px_C0 y_CO py_CO sigma_CO delta_CO'
-        #         'Dx_sub Dpx_sub Dy_sub Dpy_sub Dsigma_sub Ddelta_sub'
-        #         'enabled']))
-        BeamBeam6D=namedtuple('BeamBeam6D', 'BB6D_data')
+        BeamBeam6D=namedtuple('BeamBeam6D', ' '.join(['q_part', 'N_part_tot', 'sigmaz', 'N_slices', 'min_sigma_diff', 'threshold_singular',
+                                'phi', 'alpha', 
+                                'Sig_11_0', 'Sig_12_0', 'Sig_13_0', 
+                                'Sig_14_0', 'Sig_22_0', 'Sig_23_0', 
+                                'Sig_24_0', 'Sig_33_0', 'Sig_34_0', 'Sig_44_0',
+                                'delta_x', 'delta_y',
+                                'x_CO', 'px_CO', 'y_CO', 'py_CO', 'sigma_CO', 'delta_CO',
+                                'Dx_sub', 'Dpx_sub', 'Dy_sub', 'Dpy_sub', 'Dsigma_sub', 'Ddelta_sub',
+                                'enabled']))
     )
     variables = OrderedDict(
         [('title', Variable('', 'START', 'Study title')),
@@ -375,8 +371,8 @@ class SixInput(object):
                             N_part_tot = self.partnum*st_strengthratio
                             sigmaz = self.sigz
                             N_slices = st_ibsix
-                            min_sigma_diff = 1e-18
-                            threshold_singular = 1e-18
+                            min_sigma_diff = 1e-28
+                            threshold_singular = 1e-28
                             phi = st_xang
                             alpha = st_xplane
                             Sig_11_0 = st_sigma_xx*1e-6
@@ -411,7 +407,8 @@ class SixInput(object):
                             Ddelta_sub = 0.
                             enabled = True
 
-                            bb6data = BB6Ddata.BB6D_init(q_part, N_part_tot, sigmaz, N_slices, min_sigma_diff, threshold_singular,
+                            self.bbelements[name] = self.classes['BeamBeam6D'](
+                                q_part, N_part_tot, sigmaz, N_slices, min_sigma_diff, threshold_singular,
                                 phi, alpha, 
                                 Sig_11_0, Sig_12_0, Sig_13_0, 
                                 Sig_14_0, Sig_22_0, Sig_23_0, 
@@ -420,9 +417,6 @@ class SixInput(object):
                                 x_CO, px_CO, y_CO, py_CO, sigma_CO, delta_CO,
                                 Dx_sub, Dpx_sub, Dy_sub, Dpy_sub, Dsigma_sub, Ddelta_sub,
                                 enabled)
-
-                            self.bbelements[name] = self.classes['BeamBeam6D'](
-                                bb6data)
                         elif nslices == 0:
                             ### BB4D
                             # what I get: sigma_xx sigma_yy h_sep v_sep strengthratio
