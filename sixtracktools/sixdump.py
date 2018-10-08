@@ -33,15 +33,16 @@ dump3_t = np.dtype([
     ('xp', 'd'),  # x'[mrad] -yv(1,j)
     ('y', 'd'),  # y [mm]   -xv(2,j)
     ('yp', 'd'),  # y'[mrad] -yv(2,j)
-    ('sigma', 'd'),  # delay  s - v0 t [mm] - sigmv(j)
     ('deltaE', 'd'),  # DeltaE/E0 [1] - (ejv(j)-e0)/e0
+    ('sigma', 'd'),  # delay  s - v0 t [mm] - sigmv(j)
+    ('ktrack', 'I'),  # ktrack
     ('dummy2', 'I')])
 
 
 pmass=0.9376e9
 
 class SixDump3(object):
-    def __init__(self, filename,energy0=450e9,mass0=pmass,charge0=1,mass=pmass,charge=1):
+    def __init__(self, filename,energy0=450e9,mass0=pmass):
         self.filename = filename
         self.particles = read_dump_bin(filename, dump3_t)
         self.particles['x'] /= 1e3
@@ -52,9 +53,6 @@ class SixDump3(object):
         self.particles['deltaE'] *= 1e6
         self.mass0=mass0
         self.energy0=energy0
-        self.p0c=np.sqrt(energy0**2-mass0**2)
-        self.beta0=self.p0c/self.energy0
-        self.charge0=charge0
     px = property(lambda p: p.xp/p.rpp)
     py = property(lambda p: p.yp/p.rpp)
     ptau = property(lambda p: (p.energy-p.energy0)/p.p0c)
@@ -77,7 +75,7 @@ class SixDump3(object):
         return self.particles[k]
 
     def __dir__(self):
-        return sorted(self.__dict__.keys()+list(self.particles.dtype.names))
+        return sorted(list(self.__dict__.keys())+list(self.particles.dtype.names))
 
     def get_full_beam(self):
         out = {}
