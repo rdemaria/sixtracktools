@@ -37,32 +37,11 @@ dump3_t = np.dtype([
     ('deltaE', 'd'),  # DeltaE/E0 [1] - (ejv(j)-e0)/e0
     ('dummy2', 'I')])
 
-dump101_t = np.dtype([
-    ('dummy', 'I'),  # Record size
-    ('partid', 'I'),  # Particle number
-    ('turn', 'I'),  # Turn number
-    ('s', 'd'),  # s [m]    -dcum
-    ('x', 'd'),  # x [mm]   -xv(1,j)
-    ('xp', 'd'),  # x'[mrad] -yv(1,j)
-    ('y', 'd'),  # y [mm]   -xv(2,j)
-    ('yp', 'd'),  # y'[mrad] -yv(2,j)
-    ('sigma', 'd'),  # delay  s - v0 t [mm] - sigmv(j)
-    ('deltaE', 'd'),  # DeltaE/E0 [1] - (ejv(j)-e0)/e0
-    ('elemid', 'I'),  # Element type  - ktrack(i)
-    ('energy', 'd'),  # - ejv(j)
-    ('pc', 'd'),  # - ejfv(j)
-    ('delta', 'd'),  # - dpsv(j)
-    ('rpp', 'd'),  # P0/P=1/(1+delta) - oidpsv(j)
-    ('rvv', 'd'),  # beta0/beta - rvv(j) = (ejv(j)*e0f)/(e0*ejfv(j))
-    ('mass0', 'd'),  # mass nucm(j) (ex. pma)
-    ('chi', 'd'),  # mass to charge ratio mtc(j) m/m0*q0/q?
-    ('energy0', 'd'),  # e0
-    ('p0c', 'd'),  # e0f
-    ('dummy2', 'I')])
 
+pmass=0.9376e9
 
 class SixDump3(object):
-    def __init__(self, filename):
+    def __init__(self, filename,energy0=450e9,mass0=pmass,charge0=1,mass=pmass,charge=1):
         self.filename = filename
         self.particles = read_dump_bin(filename, dump3_t)
         self.particles['x'] /= 1e3
@@ -70,11 +49,12 @@ class SixDump3(object):
         self.particles['y'] /= 1e3
         self.particles['yp'] /= 1e3
         self.particles['sigma'] /= 1e3
-        self.particles['mass0'] *= 1e6
-        self.particles['p0c'] *= 1e6
-        self.particles['energy0'] *= 1e6
-        self.particles['energy'] *= 1e6
-        self.particles['pc'] *= 1e6
+        self.particles['deltaE'] *= 1e6
+        self.mass0=mass0
+        self.energy0=energy0
+        self.p0c=np.sqrt(energy0**2-mass0**2)
+        self.beta0=self.p0c/self.energy0
+        self.charge0=charge0
     px = property(lambda p: p.xp/p.rpp)
     py = property(lambda p: p.yp/p.rpp)
     ptau = property(lambda p: (p.energy-p.energy0)/p.p0c)
@@ -120,6 +100,28 @@ class SixDump3(object):
             out[name] = getattr(self, name)
         return out
 
+dump101_t = np.dtype([
+    ('dummy', 'I'),  # Record size
+    ('partid', 'I'),  # Particle number
+    ('turn', 'I'),  # Turn number
+    ('s', 'd'),  # s [m]    -dcum
+    ('x', 'd'),  # x [mm]   -xv(1,j)
+    ('xp', 'd'),  # x'[mrad] -yv(1,j)
+    ('y', 'd'),  # y [mm]   -xv(2,j)
+    ('yp', 'd'),  # y'[mrad] -yv(2,j)
+    ('sigma', 'd'),  # delay  s - v0 t [mm] - sigmv(j)
+    ('deltaE', 'd'),  # DeltaE/E0 [1] - (ejv(j)-e0)/e0
+    ('elemid', 'I'),  # Element type  - ktrack(i)
+    ('energy', 'd'),  # - ejv(j)
+    ('pc', 'd'),  # - ejfv(j)
+    ('delta', 'd'),  # - dpsv(j)
+    ('rpp', 'd'),  # P0/P=1/(1+delta) - oidpsv(j)
+    ('rvv', 'd'),  # beta0/beta - rvv(j) = (ejv(j)*e0f)/(e0*ejfv(j))
+    ('mass0', 'd'),  # mass nucm(j) (ex. pma)
+    ('chi', 'd'),  # mass to charge ratio mtc(j) m/m0*q0/q?
+    ('energy0', 'd'),  # e0
+    ('p0c', 'd'),  # e0f
+    ('dummy2', 'I')])
 
 class SixDump101Abs(object):
     def __init__(self, particles):
