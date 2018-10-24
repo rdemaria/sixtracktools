@@ -115,10 +115,11 @@ dump101_t = np.dtype([
     ('delta', 'd'),  # - dpsv(j)
     ('rpp', 'd'),  # P0/P=1/(1+delta) - oidpsv(j)
     ('rvv', 'd'),  # beta0/beta - rvv(j) = (ejv(j)*e0f)/(e0*ejfv(j))
-    ('mass0', 'd'),  # mass nucm(j) (ex. pma)
+    ('mass', 'd'),  # mass nucm(j) (ex. pma)
     ('chi', 'd'),  # mass to charge ratio mtc(j) m/m0*q0/q?
     ('energy0', 'd'),  # e0
     ('p0c', 'd'),  # e0f
+    #('mass0', 'd'),  # mass nucm0 (ex. pma)
     ('dummy2', 'I')])
 
 class SixDump101Abs(object):
@@ -145,6 +146,7 @@ class SixDump101Abs(object):
     beta0 = property(lambda p: p.p0c/p.energy0)
     gamma = property(lambda p: p.energy/p.mass)
     beta = property(lambda p: p.pc/p.energy)
+    mass0 =  property(lambda p:np.sqrt(p.energy0**2-p.p0c**2))
 
     def __getattr__(self, k):
         return self.particles[k]
@@ -182,7 +184,7 @@ class SixDump101(SixDump101Abs):
         particles['y'] /= 1e3
         particles['yp'] /= 1e3
         particles['sigma'] /= 1e3
-        particles['mass0'] *= 1e6
+        particles['mass'] *= 1e6
         particles['p0c'] *= 1e6
         particles['energy0'] *= 1e6
         particles['energy'] *= 1e6

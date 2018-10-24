@@ -950,7 +950,7 @@ class SixInput(object):
             # alignment errors
             for name, (dx, dy, tilt) in readf8(self.filenames['fort.8']):
                 self.align.setdefault(name, []).append((dx, dy, tilt))
-        print(self.prettyprint(full=False))
+        #print(self.prettyprint(full=False))
 
     def add_default_vars(self):
         for name, var in self.variables.items():
