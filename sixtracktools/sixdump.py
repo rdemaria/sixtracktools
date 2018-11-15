@@ -33,36 +33,16 @@ dump3_t = np.dtype([
     ('xp', 'd'),  # x'[mrad] -yv(1,j)
     ('y', 'd'),  # y [mm]   -xv(2,j)
     ('yp', 'd'),  # y'[mrad] -yv(2,j)
-    ('sigma', 'd'),  # delay  s - v0 t [mm] - sigmv(j)
     ('deltaE', 'd'),  # DeltaE/E0 [1] - (ejv(j)-e0)/e0
+    ('sigma', 'd'),  # delay  s - v0 t [mm] - sigmv(j)
+    ('ktrack', 'I'),  # ktrack
     ('dummy2', 'I')])
 
-dump101_t = np.dtype([
-    ('dummy', 'I'),  # Record size
-    ('partid', 'I'),  # Particle number
-    ('turn', 'I'),  # Turn number
-    ('s', 'd'),  # s [m]    -dcum
-    ('x', 'd'),  # x [mm]   -xv(1,j)
-    ('xp', 'd'),  # x'[mrad] -yv(1,j)
-    ('y', 'd'),  # y [mm]   -xv(2,j)
-    ('yp', 'd'),  # y'[mrad] -yv(2,j)
-    ('sigma', 'd'),  # delay  s - v0 t [mm] - sigmv(j)
-    ('deltaE', 'd'),  # DeltaE/E0 [1] - (ejv(j)-e0)/e0
-    ('elemid', 'I'),  # Element type  - ktrack(i)
-    ('energy', 'd'),  # - ejv(j)
-    ('pc', 'd'),  # - ejfv(j)
-    ('delta', 'd'),  # - dpsv(j)
-    ('rpp', 'd'),  # P0/P=1/(1+delta) - oidpsv(j)
-    ('rvv', 'd'),  # beta0/beta - rvv(j) = (ejv(j)*e0f)/(e0*ejfv(j))
-    ('mass0', 'd'),  # mass nucm(j) (ex. pma)
-    ('chi', 'd'),  # mass to charge ratio mtc(j) m/m0*q0/q?
-    ('energy0', 'd'),  # e0
-    ('p0c', 'd'),  # e0f
-    ('dummy2', 'I')])
 
+pmass=0.9376e9
 
 class SixDump3(object):
-    def __init__(self, filename):
+    def __init__(self, filename,energy0=450e9,mass0=pmass):
         self.filename = filename
         self.particles = read_dump_bin(filename, dump3_t)
         self.particles['x'] /= 1e3
@@ -70,11 +50,9 @@ class SixDump3(object):
         self.particles['y'] /= 1e3
         self.particles['yp'] /= 1e3
         self.particles['sigma'] /= 1e3
-        self.particles['mass0'] *= 1e6
-        self.particles['p0c'] *= 1e6
-        self.particles['energy0'] *= 1e6
-        self.particles['energy'] *= 1e6
-        self.particles['pc'] *= 1e6
+        self.particles['deltaE'] *= 1e6
+        self.mass0=mass0
+        self.energy0=energy0
     px = property(lambda p: p.xp/p.rpp)
     py = property(lambda p: p.yp/p.rpp)
     ptau = property(lambda p: (p.energy-p.energy0)/p.p0c)
@@ -97,7 +75,7 @@ class SixDump3(object):
         return self.particles[k]
 
     def __dir__(self):
-        return sorted(self.__dict__.keys()+list(self.particles.dtype.names))
+        return sorted(list(self.__dict__.keys())+list(self.particles.dtype.names))
 
     def get_full_beam(self):
         out = {}
@@ -120,6 +98,29 @@ class SixDump3(object):
             out[name] = getattr(self, name)
         return out
 
+dump101_t = np.dtype([
+    ('dummy', 'I'),  # Record size
+    ('partid', 'I'),  # Particle number
+    ('turn', 'I'),  # Turn number
+    ('s', 'd'),  # s [m]    -dcum
+    ('x', 'd'),  # x [mm]   -xv(1,j)
+    ('xp', 'd'),  # x'[mrad] -yv(1,j)
+    ('y', 'd'),  # y [mm]   -xv(2,j)
+    ('yp', 'd'),  # y'[mrad] -yv(2,j)
+    ('sigma', 'd'),  # delay  s - v0 t [mm] - sigmv(j)
+    ('deltaE', 'd'),  # DeltaE/E0 [1] - (ejv(j)-e0)/e0
+    ('elemid', 'I'),  # Element type  - ktrack(i)
+    ('energy', 'd'),  # - ejv(j)
+    ('pc', 'd'),  # - ejfv(j)
+    ('delta', 'd'),  # - dpsv(j)
+    ('rpp', 'd'),  # P0/P=1/(1+delta) - oidpsv(j)
+    ('rvv', 'd'),  # beta0/beta - rvv(j) = (ejv(j)*e0f)/(e0*ejfv(j))
+    ('mass', 'd'),  # mass nucm(j) (ex. pma)
+    ('chi', 'd'),  # mass to charge ratio mtc(j) m/m0*q0/q?
+    ('energy0', 'd'),  # e0
+    ('p0c', 'd'),  # e0f
+    #('mass0', 'd'),  # mass nucm0 (ex. pma)
+    ('dummy2', 'I')])
 
 class SixDump101Abs(object):
     def __init__(self, particles):
@@ -145,6 +146,7 @@ class SixDump101Abs(object):
     beta0 = property(lambda p: p.p0c/p.energy0)
     gamma = property(lambda p: p.energy/p.mass)
     beta = property(lambda p: p.pc/p.energy)
+    mass0 =  property(lambda p:np.sqrt(p.energy0**2-p.p0c**2))
 
     def __getattr__(self, k):
         return self.particles[k]
@@ -182,7 +184,7 @@ class SixDump101(SixDump101Abs):
         particles['y'] /= 1e3
         particles['yp'] /= 1e3
         particles['sigma'] /= 1e3
-        particles['mass0'] *= 1e6
+        particles['mass'] *= 1e6
         particles['p0c'] *= 1e6
         particles['energy0'] *= 1e6
         particles['energy'] *= 1e6

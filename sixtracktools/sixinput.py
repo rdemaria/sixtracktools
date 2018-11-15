@@ -950,7 +950,7 @@ class SixInput(object):
             # alignment errors
             for name, (dx, dy, tilt) in readf8(self.filenames['fort.8']):
                 self.align.setdefault(name, []).append((dx, dy, tilt))
-        print(self.prettyprint(full=False))
+        #print(self.prettyprint(full=False))
 
     def add_default_vars(self):
         for name, var in self.variables.items():
@@ -1059,6 +1059,21 @@ class SixInput(object):
                 etype, d1, d2, d3, = self.single[nnn]
                 d4, d5, d6 = None, None, None
             elem = None
+            if nnn in self.align:
+                dx, dy, tilt = self.align[nnn][ccc]
+                tilt = tilt*180e-3/pi
+                dx *= 1e-3
+                dy *= 1e-3
+                hasshift = abs(dx)+abs(dy) > 0
+                hastilt = abs(tilt) > 0
+                if hasshift:
+                    names.append(nnn+'_preshift')
+                    elems.append(XYShift(dx=dx, dy=dy))
+                    icount += 1
+                if hastilt:
+                    names.append(nnn+'_pretilt')
+                    elems.append(SRotation(angle=tilt))
+                    icount += 1
             if etype in [0, 25]:
                 elem = Drift(length=d3)
                 if d3 > 0:
@@ -1108,37 +1123,20 @@ class SixInput(object):
             else:
                 rest.append([nnn]+self.single[nnn])
             if elem is not None:
-                if nnn in self.align:
-                    dx, dy, tilt = self.align[nnn][ccc]
-                    tilt = tilt*180e-3/pi
-                    dx *= 1e-3
-                    dy *= 1e-3
-                    hasshift = abs(dx)+abs(dy) > 0
-                    hastilt = abs(tilt) > 0
-                    if hasshift:
-                        names.append(nnn+'_preshift')
-                        elems.append(XYShift(dx=dx, dy=dy))
-                        icount += 1
-                    if hastilt:
-                        names.append(nnn+'_pretilt')
-                        elems.append(SRotation(angle=tilt))
-                        icount += 1
-                    names.append(nnn)
-                    elems.append(elem)
-                    if hastilt:
-                        names.append(nnn+'_pretilt')
-                        elems.append(SRotation(angle=-tilt))
-                        icount += 1
-                    if hasshift:
-                        names.append(nnn+'_preshift')
-                        elems.append(XYShift(dx=-dx, dy=-dy))
-                        icount += 1
-                else:
-                    elems.append(elem)
-                    names.append(nnn)
+                elems.append(elem)
+                names.append(nnn)
                 if not exclude:
                     iconv.append(icount)
                 icount += 1
+            if nnn in self.align:
+                if hastilt:
+                    names.append(nnn+'_posttilt')
+                    elems.append(SRotation(angle=-tilt))
+                    icount += 1
+                if hasshift:
+                    names.append(nnn+'_postshift')
+                    elems.append(XYShift(dx=-dx, dy=-dy))
+                    icount += 1
             count[nnn] = ccc+1
         #newelems = [dict(i._asdict()) for i in elems]
         types = [i.__class__.__name__ for i in elems]
