@@ -1125,9 +1125,6 @@ class SixInput(object):
             if elem is not None:
                 elems.append(elem)
                 names.append(nnn)
-                if not exclude:
-                    iconv.append(icount)
-                icount += 1
             if nnn in self.align:
                 if hastilt:
                     names.append(nnn+'_posttilt')
@@ -1137,6 +1134,10 @@ class SixInput(object):
                     names.append(nnn+'_postshift')
                     elems.append(XYShift(dx=-dx, dy=-dy))
                     icount += 1
+            if elem is not None:
+                if not exclude:
+                    iconv.append(icount)
+                icount += 1
             count[nnn] = ccc+1
         #newelems = [dict(i._asdict()) for i in elems]
         types = [i.__class__.__name__ for i in elems]
