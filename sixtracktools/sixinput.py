@@ -107,13 +107,13 @@ class SixInput(object):
         Line=namedtuple('Line', 'elems'),
         BeamBeam4D=namedtuple(
             'BeamBeam4D', ' '.join(['q_part', 'N_part', 'sigma_x', 'sigma_y', 'beta_s', 'min_sigma_diff', 'Delta_x', 'Delta_y'])),
-        BeamBeam6D=namedtuple('BeamBeam6D', ' '.join(['q_part', 'N_part_tot', 'sigmaz', 'N_slices', 'min_sigma_diff', 'threshold_singular',
-                                                      'phi', 'alpha',
+        BeamBeam6D=namedtuple('BeamBeam6D', ' '.join(['q_part', 'phi', 'alpha', 'delta_x', 'delta',
+                                                      'N_part_slices', 'z_slices',
                                                       'Sig_11_0', 'Sig_12_0', 'Sig_13_0',
                                                       'Sig_14_0', 'Sig_22_0', 'Sig_23_0',
                                                       'Sig_24_0', 'Sig_33_0', 'Sig_34_0', 'Sig_44_0',
-                                                      'delta_x', 'delta_y',
                                                       'x_CO', 'px_CO', 'y_CO', 'py_CO', 'sigma_CO', 'delta_CO',
+                                                      'min_sigma_diff', 'threshold_singular',
                                                       'Dx_sub', 'Dpx_sub', 'Dy_sub', 'Dpy_sub', 'Dsigma_sub', 'Ddelta_sub',
                                                       'enabled']))
     )
