@@ -107,8 +107,8 @@ class SixInput(object):
         Line=namedtuple('Line', 'elems'),
         BeamBeam4D=namedtuple(
             'BeamBeam4D', ' '.join(['q_part', 'N_part', 'sigma_x', 'sigma_y', 'beta_s', 'min_sigma_diff', 'Delta_x', 'Delta_y'])),
-        BeamBeam6D=namedtuple('BeamBeam6D', ' '.join(['q_part', 'phi', 'alpha', 'delta_x', 'delta',
-                                                      'N_part_slices', 'z_slices',
+        BeamBeam6D=namedtuple('BeamBeam6D', ' '.join(['q_part', 'phi', 'alpha', 'delta_x', 'delta_y',
+                                                      'N_part_per_slice', 'z_slices',
                                                       'Sig_11_0', 'Sig_12_0', 'Sig_13_0',
                                                       'Sig_14_0', 'Sig_22_0', 'Sig_23_0',
                                                       'Sig_24_0', 'Sig_33_0', 'Sig_34_0', 'Sig_44_0',
@@ -407,16 +407,18 @@ class SixInput(object):
                             Ddelta_sub = 0.
                             enabled = True
 
+                            print('Sixtrack slicing')
+                            from .sixtrack_slicing_table import table
+                            z_slices = table[N_slices,:N_slices]*sigmaz
+                            N_part_per_slice = z_slices*0.+N_part_tot/float(N_slices)
+
                             self.bbelements[name] = self.classes['BeamBeam6D'](
-                                q_part, N_part_tot, sigmaz, N_slices, min_sigma_diff, threshold_singular,
-                                phi, alpha,
-                                Sig_11_0, Sig_12_0, Sig_13_0,
-                                Sig_14_0, Sig_22_0, Sig_23_0,
-                                Sig_24_0, Sig_33_0, Sig_34_0, Sig_44_0,
-                                delta_x, delta_y,
-                                x_CO, px_CO, y_CO, py_CO, sigma_CO, delta_CO,
-                                Dx_sub, Dpx_sub, Dy_sub, Dpy_sub, Dsigma_sub, Ddelta_sub,
-                                enabled)
+                                q_part, phi, alpha, delta_x, delta_y, N_part_per_slice, z_slices,
+                                Sig_11_0, Sig_12_0, Sig_13_0, Sig_14_0, Sig_22_0, 
+                                Sig_23_0, Sig_24_0, Sig_33_0, Sig_34_0, Sig_44_0, 
+                                x_CO, px_CO, y_CO, py_CO, sigma_CO, delta_CO, 
+                                min_sigma_diff, threshold_singular, 
+                                Dx_sub, Dpx_sub, Dy_sub, Dpy_sub, Dsigma_sub, Ddelta_sub, enabled)
                         elif nslices == 0:
                             # BB4D
                             # what I get: sigma_xx sigma_yy h_sep v_sep strengthratio
