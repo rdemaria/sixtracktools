@@ -407,7 +407,9 @@ class SixInput(object):
                             Ddelta_sub = 0.
                             enabled = True
 
-                            print('Sixtrack slicing')
+                            if N_slices>99:
+                                raise('BB6D Slicing table not large enough!')
+
                             from .sixtrack_slicing_table import table
                             z_slices = table[N_slices,:N_slices]*sigmaz
                             N_part_per_slice = z_slices*0.+N_part_tot/float(N_slices)
