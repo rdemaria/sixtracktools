@@ -367,76 +367,76 @@ class SixInput(object):
                                 st_sigma_ypyp, st_sigma_xy, st_sigma_xyp, st_sigma_xpy, st_sigma_xpyp,
                                 st_strengthratio) = tuple([nslices]+thesedata)
 
-                            q_part = qe
                             N_part_tot = self.partnum*st_strengthratio
                             sigmaz = self.sigz
                             N_slices = st_ibsix
-                            min_sigma_diff = 1e-28
-                            threshold_singular = 1e-28
+                            
                             phi = st_xang
                             alpha = st_xplane
-                            Sig_11_0 = st_sigma_xx*1e-6
-                            Sig_12_0 = st_sigma_xxp*1e-6
-                            Sig_13_0 = st_sigma_xy*1e-6
-                            Sig_14_0 = st_sigma_xyp*1e-6
-                            Sig_22_0 = st_sigma_xpxp*1e-6
-                            Sig_23_0 = st_sigma_xpy*1e-6
-                            Sig_24_0 = st_sigma_xpyp*1e-6
-                            Sig_33_0 = st_sigma_yy*1e-6
-                            Sig_34_0 = st_sigma_yyp*1e-6
-                            Sig_44_0 = st_sigma_ypyp*1e-6
+                            sigma_11 = st_sigma_xx*1e-6
+                            sigma_12 = st_sigma_xxp*1e-6
+                            sigma_13 = st_sigma_xy*1e-6
+                            sigma_14 = st_sigma_xyp*1e-6
+                            sigma_22 = st_sigma_xpxp*1e-6
+                            sigma_23 = st_sigma_xpy*1e-6
+                            sigma_24 = st_sigma_xpyp*1e-6
+                            sigma_33 = st_sigma_yy*1e-6
+                            sigma_34 = st_sigma_yyp*1e-6
+                            sigma_44 = st_sigma_ypyp*1e-6
                             if self.ibbc == 0:
                                 # No linear coupling
-                                Sig_13_0 = 0.
-                                Sig_14_0 = 0.
-                                Sig_23_0 = 0.
-                                Sig_24_0 = 0.
-                            delta_x = -st_h_sep*1e-3
-                            delta_y = -st_v_sep*1e-3
-                            x_CO = 0.
-                            px_CO = 0.
-                            y_CO = 0.
-                            py_CO = 0.
-                            sigma_CO = 0.
-                            delta_CO = 0.
-                            Dx_sub = 0.
-                            Dpx_sub = 0.
-                            Dy_sub = 0.
-                            Dpy_sub = 0.
-                            Dsigma_sub = 0.
-                            Ddelta_sub = 0.
-                            enabled = True
+                                sigma_13 = 0.
+                                sigma_14 = 0.
+                                sigma_23 = 0.
+                                sigma_24 = 0.
+                            x_bb_co = -st_h_sep*1e-3
+                            y_bb_co = -st_v_sep*1e-3
+                            x_co = 0.
+                            px_co = 0.
+                            y_co = 0.
+                            py_co = 0.
+                            zeta_co = 0.
+                            delta_co = 0.
+                            d_x = 0.
+                            d_px = 0.
+                            d_y = 0.
+                            d_py = 0.
+                            d_sigma = 0.
+                            d_delta = 0.
 
                             if N_slices>99:
                                 raise('BB6D Slicing table not large enough!')
 
                             from .sixtrack_slicing_table import table
-                            z_slices = table[N_slices,:N_slices]*sigmaz
-                            N_part_per_slice = z_slices*0.+N_part_tot/float(N_slices)
+                            zeta_slices = table[N_slices,:N_slices]*sigmaz
+                            charge_slices = zeta_slices*0.+N_part_tot/float(N_slices)
 
                             self.bbelements[name] = self.classes['BeamBeam6D'](
-                                q_part, phi, alpha, delta_x, delta_y, N_part_per_slice, z_slices,
-                                Sig_11_0, Sig_12_0, Sig_13_0, Sig_14_0, Sig_22_0, 
-                                Sig_23_0, Sig_24_0, Sig_33_0, Sig_34_0, Sig_44_0, 
-                                x_CO, px_CO, y_CO, py_CO, sigma_CO, delta_CO, 
-                                min_sigma_diff, threshold_singular, 
-                                Dx_sub, Dpx_sub, Dy_sub, Dpy_sub, Dsigma_sub, Ddelta_sub, enabled)
+                                    phi, alpha, x_bb_co, y_bb_co, 
+                                    charge_slices, zeta_slices, 
+                                    sigma_11, sigma_12, sigma_13, sigma_14, 
+                                    sigma_22, sigma_23, sigma_24, 
+                                    sigma_33, sigma_34, 
+                                    sigma_44, 
+                                    x_co, px_co, y_co, py_co, zeta_co, delta_co, 
+                                    d_x, d_px, d_y, d_py, d_sigma, d_delta)
+                                    
                         elif nslices == 0:
                             # BB4D
                             # what I get: sigma_xx sigma_yy h_sep v_sep strengthratio
                             # what I need:'q_part', 'N_part', 'sigma_x', 'sigma_y', 'beta_s', 'min_sigma_diff', 'Delta_x', 'Delta_y'
                             st_sigma_xx, st_sigma_yy, st_h_sep, st_v_sep, st_strengthratio = tuple(
                                 map(float, linesplit[2:]))
-                            q_part = qe
-                            N_part = self.partnum*st_strengthratio
+                            charge = self.partnum*st_strengthratio
                             sigma_x = np.sqrt(st_sigma_xx)*1e-3
                             sigma_y = np.sqrt(st_sigma_yy)*1e-3
-                            beta_s = 1.
-                            min_sigma_diff = 1e-10
-                            Delta_x = -st_h_sep*1e-3
-                            Delta_y = -st_v_sep*1e-3
+                            beta_r = 1.
+                            x_bb = -st_h_sep*1e-3
+                            y_bb = -st_v_sep*1e-3
+                            d_px = 0.
+                            d_py = 0.
                             self.bbelements[name] = self.classes['BeamBeam4D'](
-                                q_part, N_part, sigma_x, sigma_y, beta_s, min_sigma_diff, Delta_x, Delta_y)
+                                charge, sigma_x, sigma_y, beta_r, x_bb, y_bb, d_px, d_py)
                         else:
                             raise ValueError('ibsix must be >=0!')
                         currline = next(f3).strip()
