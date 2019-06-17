@@ -7,7 +7,7 @@ import gzip
 from collections import OrderedDict, namedtuple
 from math import factorial
 from scipy.constants import e as qe
-
+import pyblep
 import numpy as np
 
 clight = 299792458
@@ -98,25 +98,25 @@ class Variable(object):
 
 
 class SixInput(object):
-    classes = dict(
-        Drift=namedtuple('Drift', 'length'),
-        Multipole=namedtuple('Multipole', 'knl ksl hxl hyl length'),
-        Cavity=namedtuple('Cavity', 'voltage frequency lag'),
-        XYShift=namedtuple('XYShift', 'dx dy'),
-        SRotation=namedtuple('SRotation', 'angle'),
-        Line=namedtuple('Line', 'elems'),
-        BeamBeam4D=namedtuple(
-            'BeamBeam4D', ' '.join(['q_part', 'N_part', 'sigma_x', 'sigma_y', 'beta_s', 'min_sigma_diff', 'Delta_x', 'Delta_y'])),
-        BeamBeam6D=namedtuple('BeamBeam6D', ' '.join(['q_part', 'phi', 'alpha', 'delta_x', 'delta_y',
-                                                      'N_part_per_slice', 'z_slices',
-                                                      'Sig_11_0', 'Sig_12_0', 'Sig_13_0',
-                                                      'Sig_14_0', 'Sig_22_0', 'Sig_23_0',
-                                                      'Sig_24_0', 'Sig_33_0', 'Sig_34_0', 'Sig_44_0',
-                                                      'x_CO', 'px_CO', 'y_CO', 'py_CO', 'sigma_CO', 'delta_CO',
-                                                      'min_sigma_diff', 'threshold_singular',
-                                                      'Dx_sub', 'Dpx_sub', 'Dy_sub', 'Dpy_sub', 'Dsigma_sub', 'Ddelta_sub',
-                                                      'enabled']))
-    )
+    
+    class_names = [
+            'BeamBeam4D',
+            'BeamBeam6D',
+            'Cavity',
+            'Drift',
+            'DriftExact',
+            'Element',
+            'Line',
+            'Multipole',
+            'Particle',
+            'SRotation',
+            'XYShift',
+            ]
+    
+    classes = {}
+    for nn in class_names:
+        classes[nn] = getattr(pyblep.elements, nn)
+    
     variables = OrderedDict(
         [('title', Variable('', 'START', 'Study title')),
          ('geom',  Variable('GEOM', 'START',
@@ -367,76 +367,76 @@ class SixInput(object):
                                 st_sigma_ypyp, st_sigma_xy, st_sigma_xyp, st_sigma_xpy, st_sigma_xpyp,
                                 st_strengthratio) = tuple([nslices]+thesedata)
 
-                            q_part = qe
                             N_part_tot = self.partnum*st_strengthratio
                             sigmaz = self.sigz
                             N_slices = st_ibsix
-                            min_sigma_diff = 1e-28
-                            threshold_singular = 1e-28
+                            
                             phi = st_xang
                             alpha = st_xplane
-                            Sig_11_0 = st_sigma_xx*1e-6
-                            Sig_12_0 = st_sigma_xxp*1e-6
-                            Sig_13_0 = st_sigma_xy*1e-6
-                            Sig_14_0 = st_sigma_xyp*1e-6
-                            Sig_22_0 = st_sigma_xpxp*1e-6
-                            Sig_23_0 = st_sigma_xpy*1e-6
-                            Sig_24_0 = st_sigma_xpyp*1e-6
-                            Sig_33_0 = st_sigma_yy*1e-6
-                            Sig_34_0 = st_sigma_yyp*1e-6
-                            Sig_44_0 = st_sigma_ypyp*1e-6
+                            sigma_11 = st_sigma_xx*1e-6
+                            sigma_12 = st_sigma_xxp*1e-6
+                            sigma_13 = st_sigma_xy*1e-6
+                            sigma_14 = st_sigma_xyp*1e-6
+                            sigma_22 = st_sigma_xpxp*1e-6
+                            sigma_23 = st_sigma_xpy*1e-6
+                            sigma_24 = st_sigma_xpyp*1e-6
+                            sigma_33 = st_sigma_yy*1e-6
+                            sigma_34 = st_sigma_yyp*1e-6
+                            sigma_44 = st_sigma_ypyp*1e-6
                             if self.ibbc == 0:
                                 # No linear coupling
-                                Sig_13_0 = 0.
-                                Sig_14_0 = 0.
-                                Sig_23_0 = 0.
-                                Sig_24_0 = 0.
-                            delta_x = -st_h_sep*1e-3
-                            delta_y = -st_v_sep*1e-3
-                            x_CO = 0.
-                            px_CO = 0.
-                            y_CO = 0.
-                            py_CO = 0.
-                            sigma_CO = 0.
-                            delta_CO = 0.
-                            Dx_sub = 0.
-                            Dpx_sub = 0.
-                            Dy_sub = 0.
-                            Dpy_sub = 0.
-                            Dsigma_sub = 0.
-                            Ddelta_sub = 0.
-                            enabled = True
+                                sigma_13 = 0.
+                                sigma_14 = 0.
+                                sigma_23 = 0.
+                                sigma_24 = 0.
+                            x_bb_co = -st_h_sep*1e-3
+                            y_bb_co = -st_v_sep*1e-3
+                            x_co = 0.
+                            px_co = 0.
+                            y_co = 0.
+                            py_co = 0.
+                            zeta_co = 0.
+                            delta_co = 0.
+                            d_x = 0.
+                            d_px = 0.
+                            d_y = 0.
+                            d_py = 0.
+                            d_sigma = 0.
+                            d_delta = 0.
 
                             if N_slices>99:
                                 raise('BB6D Slicing table not large enough!')
 
                             from .sixtrack_slicing_table import table
-                            z_slices = table[N_slices,:N_slices]*sigmaz
-                            N_part_per_slice = z_slices*0.+N_part_tot/float(N_slices)
+                            zeta_slices = table[N_slices,:N_slices]*sigmaz
+                            charge_slices = zeta_slices*0.+N_part_tot/float(N_slices)
 
                             self.bbelements[name] = self.classes['BeamBeam6D'](
-                                q_part, phi, alpha, delta_x, delta_y, N_part_per_slice, z_slices,
-                                Sig_11_0, Sig_12_0, Sig_13_0, Sig_14_0, Sig_22_0, 
-                                Sig_23_0, Sig_24_0, Sig_33_0, Sig_34_0, Sig_44_0, 
-                                x_CO, px_CO, y_CO, py_CO, sigma_CO, delta_CO, 
-                                min_sigma_diff, threshold_singular, 
-                                Dx_sub, Dpx_sub, Dy_sub, Dpy_sub, Dsigma_sub, Ddelta_sub, enabled)
+                                    phi, alpha, x_bb_co, y_bb_co, 
+                                    charge_slices, zeta_slices, 
+                                    sigma_11, sigma_12, sigma_13, sigma_14, 
+                                    sigma_22, sigma_23, sigma_24, 
+                                    sigma_33, sigma_34, 
+                                    sigma_44, 
+                                    x_co, px_co, y_co, py_co, zeta_co, delta_co, 
+                                    d_x, d_px, d_y, d_py, d_sigma, d_delta)
+                                    
                         elif nslices == 0:
                             # BB4D
                             # what I get: sigma_xx sigma_yy h_sep v_sep strengthratio
                             # what I need:'q_part', 'N_part', 'sigma_x', 'sigma_y', 'beta_s', 'min_sigma_diff', 'Delta_x', 'Delta_y'
                             st_sigma_xx, st_sigma_yy, st_h_sep, st_v_sep, st_strengthratio = tuple(
                                 map(float, linesplit[2:]))
-                            q_part = qe
-                            N_part = self.partnum*st_strengthratio
+                            charge = self.partnum*st_strengthratio
                             sigma_x = np.sqrt(st_sigma_xx)*1e-3
                             sigma_y = np.sqrt(st_sigma_yy)*1e-3
-                            beta_s = 1.
-                            min_sigma_diff = 1e-10
-                            Delta_x = -st_h_sep*1e-3
-                            Delta_y = -st_v_sep*1e-3
+                            beta_r = 1.
+                            x_bb = -st_h_sep*1e-3
+                            y_bb = -st_v_sep*1e-3
+                            d_px = 0.
+                            d_py = 0.
                             self.bbelements[name] = self.classes['BeamBeam4D'](
-                                q_part, N_part, sigma_x, sigma_y, beta_s, min_sigma_diff, Delta_x, Delta_y)
+                                charge, sigma_x, sigma_y, beta_r, x_bb, y_bb, d_px, d_py)
                         else:
                             raise ValueError('ibsix must be >=0!')
                         currline = next(f3).strip()
@@ -1034,119 +1034,6 @@ class SixInput(object):
                     yield ell
             else:
                 yield el
-
-    def expand_struct(self, convert=classes):
-        elems = []
-        count = {}
-        icount = 0
-        iconv = []
-        names = []
-        rest = []
-        Drift = convert['Drift']
-        Multipole = convert['Multipole']
-        Cavity = convert['Cavity']
-        XYShift = convert['XYShift']
-        SRotation = convert['SRotation']
-        Line = convert['Line']
-        BeamBeam4D = convert['BeamBeam4D']
-        BeamBeam6D = convert['BeamBeam6D']
-        exclude = False
-        # add special elenents
-        if 'CAV' in self.iter_struct():
-            self.single['CAV'] = [12*self.ition, self.u0, self.harm, 0]
-        for nnn in self.iter_struct():
-            exclude = False
-            ccc = count.setdefault(nnn, 0)
-            if len(self.single[nnn]) == 7:
-                etype, d1, d2, d3, d4, d5, d6 = self.single[nnn]
-            else:
-                etype, d1, d2, d3, = self.single[nnn]
-                d4, d5, d6 = None, None, None
-            elem = None
-            if nnn in self.align:
-                dx, dy, tilt = self.align[nnn][ccc]
-                tilt = tilt*180e-3/pi
-                dx *= 1e-3
-                dy *= 1e-3
-                hasshift = abs(dx)+abs(dy) > 0
-                hastilt = abs(tilt) > 0
-                if hasshift:
-                    names.append(nnn+'_preshift')
-                    elems.append(XYShift(dx=dx, dy=dy))
-                    icount += 1
-                if hastilt:
-                    names.append(nnn+'_pretilt')
-                    elems.append(SRotation(angle=tilt))
-                    icount += 1
-            if etype in [0, 25]:
-                elem = Drift(length=d3)
-                if d3 > 0:
-                    exclude = True
-            elif abs(etype) in [1, 2, 3, 4, 5, 7, 8, 9, 10]:
-                bn_six = d1
-                nn = abs(etype)
-                sign = -etype/nn
-                madval = bn_mad(bn_six, nn, sign)
-                knl = [0]*(nn-1)+[madval]
-                ksl = [0]*nn
-                if sign == 1:
-                    knl, ksl = ksl, knl
-                elem = Multipole(knl=knl, ksl=ksl, hxl=0, hyl=0, length=0)
-            elif etype == 11:
-                knl, ksl = self.get_knl(nnn, ccc)
-                hxl = 0
-                hyl = 0
-                l = 0
-                # beaware of the case of thick bend
-                # see beambeam example where mbw has the length
-                if d3 == -1:
-                    hxl = -d1
-                    l = d2
-                    knl[0] = hxl
-                elif d3 == -2:
-                    hyl = -d1  # strange sign!!!
-                    l = d2
-                    ksl[0] = hyl
-                elem = Multipole(knl=knl, ksl=ksl, hxl=hxl, hyl=hyl, length=l)
-            elif etype == 12:
-                # e0=self.initialconditions[-1]
-                # p0c=np.sqrt(e0**2-self.pma**2)
-                # beta0=p0c/e0
-                v = d1*1e6
-                freq = d2*clight/self.tlen
-                # print(v,freq)
-                elem = Cavity(voltage=v, frequency=freq, lag=180-d3)
-            elif etype == 20:
-                thisbb = self.bbelements[nnn]
-                if type(thisbb) is self.classes['BeamBeam4D']:
-                    elem = BeamBeam4D(**thisbb._asdict())
-                elif type(thisbb) is self.classes['BeamBeam6D']:
-                    elem = BeamBeam6D(**thisbb._asdict())
-                else:
-                    raise ValueError('What?!')
-            else:
-                rest.append([nnn]+self.single[nnn])
-            if elem is not None:
-                elems.append(elem)
-                names.append(nnn)
-            if nnn in self.align:
-                if hastilt:
-                    names.append(nnn+'_posttilt')
-                    elems.append(SRotation(angle=-tilt))
-                    icount += 1
-                if hasshift:
-                    names.append(nnn+'_postshift')
-                    elems.append(XYShift(dx=-dx, dy=-dy))
-                    icount += 1
-            if elem is not None:
-                if not exclude:
-                    iconv.append(icount)
-                icount += 1
-            count[nnn] = ccc+1
-        #newelems = [dict(i._asdict()) for i in elems]
-        types = [i.__class__.__name__ for i in elems]
-        return list(zip(names, types, elems)), rest, iconv
-
 
 if __name__ == '__main__':
     import sys
