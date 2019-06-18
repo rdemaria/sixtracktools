@@ -6,7 +6,6 @@ import os
 import gzip
 from collections import OrderedDict, namedtuple
 from math import factorial
-from scipy.constants import e as qe
 import numpy as np
 
 clight = 299792458
@@ -735,7 +734,7 @@ class SixInput(object):
                     self.resonance_ns2 = int(linesplit[2])
                     self.resonance_ns3 = int(linesplit[3])
                     currline = next(f3)
-                if not startswith('NEXT'):
+                if not currline.startswith('NEXT'):
                     linesplit = currline.split()
                     self.resonance_length = myfloat(linesplit[0])
                     self.resonance_Qx = myfloat(linesplit[1])
@@ -743,7 +742,7 @@ class SixInput(object):
                     self.resonance_Ax = myfloat(linesplit[3])
                     self.resonance_Ay = myfloat(linesplit[4])
                     currline = next(f3)
-                if not startswith('NEXT'):
+                if not currline.startswith('NEXT'):
                     linesplit = currline.split()
                     self.resonance_name1 = linesplit[0]
                     self.resonance_name2 = linesplit[1]
@@ -752,13 +751,13 @@ class SixInput(object):
                     self.resonance_name5 = linesplit[4]
                     self.resonance_name6 = linesplit[5]
                     currline = next(f3)
-                if not startswith('NEXT'):
+                if not currline.startswith('NEXT'):
                     linesplit = next(f3)
                     self.resonance_nch = int(linesplit[0])
                     self.resonance_name7 = linesplit[1]
                     self.resonance_name8 = linesplit[2]
                     currline = next(f3)
-                if not startswith('NEXT'):
+                if not currline.startswith('NEXT'):
                     linesplit = next(f3)
                     self.resonance_nq = int(linesplit[0])
                     self.resonance_name9 = linesplit[1]
