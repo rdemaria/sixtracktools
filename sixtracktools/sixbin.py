@@ -71,9 +71,10 @@ delta    1d DeltaP/P0
 energy   1d Energy (Mev)
 """
 
+_open=open
 
 def open(fn):
-    fh = file(fn, 'rb')
+    fh = _open(fn, 'rb')
     header = _read(fh, fmt_head)
     partfirst = header['partfirst']
     partlast = header['partlast']
