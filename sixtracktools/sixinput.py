@@ -7,12 +7,21 @@ import gzip
 from collections import OrderedDict, namedtuple
 from math import factorial
 from scipy.constants import e as qe
-import pyblep
 import numpy as np
 
 clight = 299792458
 pi = np.pi
 
+
+BeamBeam6D=namedtuple("BeamBeam6D",
+        ['phi', 'alpha', 'x_bb_co', 'y_bb_co', 'charge_slices', 'zeta_slices',
+ 'sigma_11', 'sigma_12', 'sigma_13', 'sigma_14', 'sigma_22', 'sigma_23',
+ 'sigma_24', 'sigma_33', 'sigma_34', 'sigma_44', 'x_co', 'px_co', 'y_co',
+ 'py_co', 'zeta_co', 'delta_co', 'd_x', 'd_px', 'd_y', 'd_py',
+ 'd_zeta', 'd_delta'])
+
+BeamBeam4D=namedtuple("BeamBeam4D",
+        ['charge','sigma_x','sigma_y','beta_r', 'x_bb', 'y_bb', 'd_px', 'd_py'])
 
 def getlines(fn):
     if fn.endswith('.gz'):
@@ -98,25 +107,7 @@ class Variable(object):
 
 
 class SixInput(object):
-    
-    class_names = [
-            'BeamBeam4D',
-            'BeamBeam6D',
-            'Cavity',
-            'Drift',
-            'DriftExact',
-            'Element',
-            'Line',
-            'Multipole',
-            'Particle',
-            'SRotation',
-            'XYShift',
-            ]
-    
-    classes = {}
-    for nn in class_names:
-        classes[nn] = getattr(pyblep.elements, nn)
-    
+
     variables = OrderedDict(
         [('title', Variable('', 'START', 'Study title')),
          ('geom',  Variable('GEOM', 'START',
@@ -370,7 +361,7 @@ class SixInput(object):
                             N_part_tot = self.partnum*st_strengthratio
                             sigmaz = self.sigz
                             N_slices = st_ibsix
-                            
+
                             phi = st_xang
                             alpha = st_xplane
                             sigma_11 = st_sigma_xx*1e-6
@@ -404,23 +395,24 @@ class SixInput(object):
                             d_sigma = 0.
                             d_delta = 0.
 
-                            if N_slices>99:
+                            if N_slices > 99:
                                 raise('BB6D Slicing table not large enough!')
 
                             from .sixtrack_slicing_table import table
-                            zeta_slices = table[N_slices,:N_slices]*sigmaz
-                            charge_slices = zeta_slices*0.+N_part_tot/float(N_slices)
+                            zeta_slices = table[N_slices, :N_slices]*sigmaz
+                            charge_slices = zeta_slices * \
+                                0.+N_part_tot/float(N_slices)
 
-                            self.bbelements[name] = self.classes['BeamBeam6D'](
-                                    phi, alpha, x_bb_co, y_bb_co, 
-                                    charge_slices, zeta_slices, 
-                                    sigma_11, sigma_12, sigma_13, sigma_14, 
-                                    sigma_22, sigma_23, sigma_24, 
-                                    sigma_33, sigma_34, 
-                                    sigma_44, 
-                                    x_co, px_co, y_co, py_co, zeta_co, delta_co, 
-                                    d_x, d_px, d_y, d_py, d_sigma, d_delta)
-                                    
+                            self.bbelements[name] = BeamBeam6D(
+                                phi, alpha, x_bb_co, y_bb_co,
+                                charge_slices, zeta_slices,
+                                sigma_11, sigma_12, sigma_13, sigma_14,
+                                sigma_22, sigma_23, sigma_24,
+                                sigma_33, sigma_34,
+                                sigma_44,
+                                x_co, px_co, y_co, py_co, zeta_co, delta_co,
+                                d_x, d_px, d_y, d_py, d_sigma, d_delta)
+
                         elif nslices == 0:
                             # BB4D
                             # what I get: sigma_xx sigma_yy h_sep v_sep strengthratio
@@ -435,7 +427,7 @@ class SixInput(object):
                             y_bb = -st_v_sep*1e-3
                             d_px = 0.
                             d_py = 0.
-                            self.bbelements[name] = self.classes['BeamBeam4D'](
+                            self.bbelements[name] = BeamBeam4D(
                                 charge, sigma_x, sigma_y, beta_r, x_bb, y_bb, d_px, d_py)
                         else:
                             raise ValueError('ibsix must be >=0!')
@@ -954,7 +946,7 @@ class SixInput(object):
             # alignment errors
             for name, (dx, dy, tilt) in readf8(self.filenames['fort.8']):
                 self.align.setdefault(name, []).append((dx, dy, tilt))
-        #print(self.prettyprint(full=False))
+        # print(self.prettyprint(full=False))
 
     def add_default_vars(self):
         for name, var in self.variables.items():
@@ -1034,6 +1026,7 @@ class SixInput(object):
                     yield ell
             else:
                 yield el
+
 
 if __name__ == '__main__':
     import sys

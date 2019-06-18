@@ -39,10 +39,11 @@ dump3_t = np.dtype([
     ('dummy2', 'I')])
 
 
-pmass=0.9376e9
+pmass = 0.9376e9
+
 
 class SixDump3(object):
-    def __init__(self, filename,energy0=450e9,mass0=pmass):
+    def __init__(self, filename, energy0=450e9, mass0=pmass):
         self.filename = filename
         self.particles = read_dump_bin(filename, dump3_t)
         self.particles['x'] /= 1e3
@@ -51,8 +52,8 @@ class SixDump3(object):
         self.particles['yp'] /= 1e3
         self.particles['sigma'] /= 1e3
         self.particles['deltaE'] *= 1e6
-        self.mass0=mass0
-        self.energy0=energy0
+        self.mass0 = mass0
+        self.energy0 = energy0
     px = property(lambda p: p.xp/p.rpp)
     py = property(lambda p: p.yp/p.rpp)
     ptau = property(lambda p: (p.energy-p.energy0)/p.p0c)
@@ -98,6 +99,7 @@ class SixDump3(object):
             out[name] = getattr(self, name)
         return out
 
+
 dump101_t = np.dtype([
     ('dummy', 'I'),  # Record size
     ('partid', 'I'),  # Particle number
@@ -121,6 +123,7 @@ dump101_t = np.dtype([
     ('p0c', 'd'),  # e0f
     #('mass0', 'd'),  # mass nucm0 (ex. pma)
     ('dummy2', 'I')])
+
 
 class SixDump101Abs(object):
     def __init__(self, particles):
@@ -146,7 +149,7 @@ class SixDump101Abs(object):
     beta0 = property(lambda p: p.p0c/p.energy0)
     gamma = property(lambda p: p.energy/p.mass)
     beta = property(lambda p: p.pc/p.energy)
-    mass0 =  property(lambda p:np.sqrt(p.energy0**2-p.p0c**2))
+    mass0 = property(lambda p: np.sqrt(p.energy0**2-p.p0c**2))
 
     def __getattr__(self, k):
         return self.particles[k]
