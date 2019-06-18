@@ -13,15 +13,16 @@ clight = 299792458
 pi = np.pi
 
 
-BeamBeam6D=namedtuple("BeamBeam6D",
-        ['phi', 'alpha', 'x_bb_co', 'y_bb_co', 'charge_slices', 'zeta_slices',
- 'sigma_11', 'sigma_12', 'sigma_13', 'sigma_14', 'sigma_22', 'sigma_23',
- 'sigma_24', 'sigma_33', 'sigma_34', 'sigma_44', 'x_co', 'px_co', 'y_co',
- 'py_co', 'zeta_co', 'delta_co', 'd_x', 'd_px', 'd_y', 'd_py',
- 'd_zeta', 'd_delta'])
+BeamBeam6D = namedtuple("BeamBeam6D",
+                        ['phi', 'alpha', 'x_bb_co', 'y_bb_co', 'charge_slices', 'zeta_slices',
+                         'sigma_11', 'sigma_12', 'sigma_13', 'sigma_14', 'sigma_22', 'sigma_23',
+                         'sigma_24', 'sigma_33', 'sigma_34', 'sigma_44', 'x_co', 'px_co', 'y_co',
+                         'py_co', 'zeta_co', 'delta_co', 'd_x', 'd_px', 'd_y', 'd_py',
+                         'd_zeta', 'd_delta'])
 
-BeamBeam4D=namedtuple("BeamBeam4D",
-        ['charge','sigma_x','sigma_y','beta_r', 'x_bb', 'y_bb', 'd_px', 'd_py'])
+BeamBeam4D = namedtuple("BeamBeam4D",
+                        ['charge', 'sigma_x', 'sigma_y', 'beta_r', 'x_bb', 'y_bb', 'd_px', 'd_py'])
+
 
 def getlines(fn):
     if fn.endswith('.gz'):
