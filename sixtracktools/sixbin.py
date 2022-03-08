@@ -81,7 +81,7 @@ def open(fn):
     part = {}
     for i in range(partfirst, partlast+1):
         part[i] = []
-    while fh.read(4) != '':  # read(fh,'headpart 1I ...')
+    while fh.read(4) != b'':  # read(fh,'headpart 1I ...')
         turnnum = struct.unpack('I', fh.read(4))
         # read(fh,fmt_part)
         # read(fh,fmt_part)
