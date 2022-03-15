@@ -757,7 +757,7 @@ class SixInput(object):
                 currline = next(f3)
                 self.aperturelimitations = {}
                 if 'LOAD' in currline:
-                    apfh=open(currline.split()[1].strip())
+                    apfh=open(basedir + '/' + currline.split()[1].strip())
                     for line in apfh:
                         if line.startswith('/'):
                             continue
