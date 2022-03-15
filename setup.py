@@ -2,7 +2,7 @@ import setuptools
 
 setuptools.setup(
         name='sixtracktools',
-        version='0.0.4',
+        version='0.0.5',
         description='Python tools for sixtrack',
         author='Riccardo De Maria',
         author_email='riccardo.de.maria@cern.ch',
