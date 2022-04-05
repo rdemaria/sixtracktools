@@ -714,7 +714,8 @@ class SixInput(object):
                     self.chi0 = myfloat(linesplit[1])
                     self.chid = myfloat(linesplit[2])
                     self.rat = myfloat(linesplit[3])
-                    if len(linesplit)>4:
+
+                    if len(linesplit) > 4:
                         self.iver = int(linesplit[4])
                     currline = next(f3).strip()
                 while not currline.startswith("NEXT"):
@@ -756,10 +757,10 @@ class SixInput(object):
             elif currline.startswith("LIMI"):
                 currline = next(f3)
                 self.aperturelimitations = {}
-                if 'LOAD' in currline:
-                    apfh=open(basedir + '/' + currline.split()[1].strip())
+                if "LOAD" in currline:
+                    apfh = open(os.path.join(basedir, currline.split()[1].strip()))
                     for line in apfh:
-                        if line.startswith('/'):
+                        if line.startswith("/"):
                             continue
                         name, data = line.split(" ", 1)
                         data = data.split()
