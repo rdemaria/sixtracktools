@@ -714,6 +714,7 @@ class SixInput(object):
                     self.chi0 = myfloat(linesplit[1])
                     self.chid = myfloat(linesplit[2])
                     self.rat = myfloat(linesplit[3])
+
                     if len(linesplit) > 4:
                         self.iver = int(linesplit[4])
                     currline = next(f3).strip()
@@ -1093,7 +1094,10 @@ class SixInput(object):
                 self.struct = []
                 currline = next(f3).strip()
                 while not currline.startswith("NEXT"):
-                    self.struct.extend(currline.split())
+                    vals = currline.split()
+                    if 'GO' in vals:
+                        vals.remove('GO')
+                    self.struct.extend(vals)
                     currline = next(f3).strip()
 
         # end of the while loop (finished reading fort.2 and fort.3)
