@@ -140,12 +140,7 @@ class SixInput(object):
     variables = OrderedDict(
         [
             ("title", Variable("", "START", "Study title")),
-            (
-                "geom",
-                Variable(
-                    "GEOM", "START", "FREE: lattice in fort.3; GEOM: lattice in fort.2"
-                ),
-            ),
+            ("geom", Variable("GEOM", "START", "FREE: lattice in fort.3; GEOM: lattice in fort.2")),
             ("printout", Variable(True, "PRIN", "Print input data in the outputfile")),
             ("partnum", Variable(1000.0, "BEAM", "Numer of particles in bunch")),
             ("emitnx", Variable(1000.0, "BEAM", "Horizontal normalized emittance")),
@@ -153,71 +148,34 @@ class SixInput(object):
             ("sigz", Variable(1000.0, "BEAM", "r.m.s bunch length")),
             ("sige", Variable(1000.0, "BEAM", "r.m.s energy spread")),
             ("ibeco", Variable(1, "BEAM", "Switch to subtract the closed orbit")),
-            (
-                "ibtyp",
-                Variable(1, "BEAM", "Switch to use the fast beam-beam algorithms"),
-            ),
+            ("ibtyp", Variable(1, "BEAM", "Switch to use the fast beam-beam algorithms")),
             ("lhc", Variable(0, "BEAM", "Switch for anti-symmetric IR")),
             ("ibbc", Variable(0, "BEAM", "Switch for linear coupling in 4D and 6D")),
             ("ctype", Variable(0, "CORR", "Correction type")),
-            (
-                "ncor",
-                Variable(
-                    0, "CORR", "Number of zero length elements to be used as correctors"
-                ),
-            ),
+            ("ncor", Variable(0, "CORR", "Number of zero length elements to be used as correctors")),
             ("comment", Variable("", "COMM", "Comment line")),
             ("deco_name1", Variable("", "DECO", "Name of skew-quadrupole family 1")),
             ("deco_name2", Variable("", "DECO", "Name of skew-quadrupole family 2")),
             ("deco_name3", Variable("", "DECO", "Name of skew-quadrupole family 3")),
             ("deco_name4", Variable("", "DECO", "Name of skew-quadrupole family 4")),
-            (
-                "deco_name5",
-                Variable("", "DECO", "Name of focusing quadrupole families"),
-            ),
-            (
-                "deco_name6",
-                Variable("", "DECO", "Name of defocusing quadrupole families"),
-            ),
-            (
-                "deco_Qx",
-                Variable(0, "DECO", "Horizontal tune including the integer part"),
-            ),
-            (
-                "deco_Qy",
-                Variable(0, "DECO", "Vertical tune including the integer part"),
-            ),
+            ("deco_name5", Variable("", "DECO", "Name of focusing quadrupole families")),
+            ("deco_name6", Variable("", "DECO", "Name of defocusing quadrupole families")),
+            ("deco_Qx", Variable(0, "DECO", "Horizontal tune including the integer part")),
+            ("deco_Qy", Variable(0, "DECO", "Vertical tune including the integer part")),
             ("diff_nord", Variable(0, "DIFF", "Order of the map")),
             ("diff_nvar", Variable(0, "DIFF", "Number of the variables")),
-            (
-                "diff_preda",
-                Variable(1e-38, "DIFF", "Precision needed by the DA package"),
-            ),
-            (
-                "diff_nsix",
-                Variable(0, "DIFF", "Switch to calculate 5x6 instead of 6x6 map"),
-            ),
+            ("diff_preda", Variable(1e-38, "DIFF", "Precision needed by the DA package")),
+            ("diff_nsix", Variable(0, "DIFF", "Switch to calculate 5x6 instead of 6x6 map")),
             ("diff_ncor", Variable(0, "DIFF", "Number of zero-length elements")),
             ("diff_name", Variable("", "DIFF", "Names of zero-length elements")),
-            (
-                "izu0",
-                Variable(100000, "FLUC", "Start value for the random number generator"),
-            ),
+            ("izu0", Variable(100000, "FLUC", "Start value for the random number generator")),
             ("mmac", Variable(1, "FLUC", "Disabled parameter, fixed to be 1")),
             ("mout", Variable(7, "FLUC", "Binary switch for various purposes")),
             ("mcut", Variable(3, "FLUC", "Random distribution cut of sigma")),
             ("itra", Variable(0, "INIT", "Number of particles")),
             ("chi0", Variable(0.0, "INIT", "Starting phase of initial coordinates")),
-            (
-                "chid",
-                Variable(
-                    0.0, "INIT", "Phase difference between first and second particle"
-                ),
-            ),
-            (
-                "rat",
-                Variable(999, "INIT", "Emittance ratio of horiz. & vertical motion"),
-            ),
+            ("chid", Variable(0.0, "INIT", "Phase difference between first and second particle")),
+            ("rat", Variable(999, "INIT", "Emittance ratio of horiz. & vertical motion")),
             ("iver", Variable(0, "INIT", "Switch to set vertical coordinates to zero")),
             ("itco", Variable(50, "ITER", "Number of closed orbit search iterations")),
             ("dma", Variable(1e-12, "ITER", "Precision of closed orbit displacement")),
@@ -233,58 +191,23 @@ class SixInput(object):
             ("dsi", Variable(1e-09, "ITER", "Desired orbit r.m.s value")),
             ("aper1", Variable(1000, "ITER", "Horizontal aperture limit [mm]")),
             ("aper2", Variable(1000, "ITER", "Vertical aperture limit [mm]")),
-            (
-                "mode",
-                Variable(
-                    "ELEMENT", "LINE", "Printout after each single ELEMENT or BLOCK"
-                ),
-            ),
-            (
-                "number_of_blocks",
-                Variable(0, "LINE", "number of the blocks in the structure"),
-            ),
+            ("mode", Variable("ELEMENT", "LINE", "Printout after each single ELEMENT or BLOCK")),
+            ("number_of_blocks", Variable(0, "LINE", "number of the blocks in the structure"),),
             ("ilin", Variable(0, "LINE", "Logical switch to calculate linear optics")),
-            (
-                "ntco",
-                Variable(0, "LINE", "Swtich to write out linear coupling parameters"),
-            ),
+            ("ntco", Variable(0, "LINE", "Swtich to write out linear coupling parameters")),
             ("E_I", Variable(0, "LINE", "Eigen emittance 1")),
             ("E_II", Variable(0, "LINE", "Eigen emittance 2")),
             ("nord", Variable(0, "NORM", "Order of the normal form")),
             ("nvar", Variable(0, "NORM", "Number of varibles")),
-            (
-                "sigmax",
-                Variable(
-                    0, "ORBI", "Desired r.m.s for randomly distributed closed orbit"
-                ),
-            ),
-            (
-                "sigmay",
-                Variable(
-                    0, "ORBI", "Desired r.m.s for randomly distrubuted closed orbit"
-                ),
-            ),
+            ("sigmax", Variable(0, "ORBI", "Desired r.m.s for randomly distributed closed orbit")),
+            ("sigmay", Variable(0, "ORBI", "Desired r.m.s for randomly distrubuted closed orbit")),
             ("ncorru", Variable(0, "NORM", "Number of correctors to be used")),
             ("ncorrep", Variable(0, "NORM", "Number of corrections")),
             ("post_comment", Variable("", "POST", "Postprocessing comment title")),
-            (
-                "post_iav",
-                Variable(
-                    20,
-                    "POST",
-                    "Averaging interval of the values of the distance in phase space",
-                ),
-            ),
+            ("post_iav", Variable(20, "POST", "Averaging interval of the values of the distance in phase space")),
             ("post_nstart", Variable(0, "POST", "Start turn number for the analysis")),
             ("post_nstop", Variable(0, "POST", "Stop turn number for the analysis")),
-            (
-                "post_iwg",
-                Variable(
-                    1,
-                    "POST",
-                    "Switch for the weighting of the slope of the distance in phase ",
-                ),
-            ),
+            ("post_iwg", Variable(1, "POST", "Switch for the weighting of the slope of the distance in phase ")),
             ("post_dphix", Variable(0.08, "POST", "")),
             ("post_dphiy", Variable(0.08, "POST", "")),
             ("post_iskip", Variable(1, "POST", "")),
@@ -340,54 +263,36 @@ class SixInput(object):
             ("resonance_nq", Variable(0, "RESO", "")),
             ("resonance_Qx0", Variable(0, "RESO", "")),
             ("resonance_Qy0", Variable(0, "RESO", "")),
+            ("e0", Variable(0., "SIMU", "Energy of the reference particle in MeV.")),
+            ("m0c2", Variable(938.271998, "SIMU", "Mass of the reference particle in MeV.")),
+            ("q0", Variable(0., "SIMU", "Charge of the reference particle.")),
+            ("a0", Variable(0., "SIMU", "Atomic mass of the reference particle.")),
+            ("z0", Variable(0., "SIMU", "Atomic number of the reference particle.")),
             ("numl", Variable(0, "TRAC", "Number of turns in the forward direction")),
             ("numlr", Variable(0, "TRAC", "Number of turns in the backward direction")),
             ("napx", Variable(999, "TRAC", "Number of amplitude variations")),
-            (
-                "amp1",
-                Variable(999, "TRAC", "Start amplitude in the horiz. phase space"),
-            ),
+            ("amp1", Variable(999, "TRAC", "Start amplitude in the horiz. phase space")),
             ("amp0", Variable(999, "TRAC", "End amplitude in the horiz. phase space")),
             ("ird", Variable(0, "TRAC", "Switch for the type of amplitude variation")),
             ("imc", Variable(1, "TRAC", "Number of variations of delta")),
+            ("niu1", Variable(0, "TRAC", "Start structure element index for optics calculation.")),
+            ("niu2", Variable(0, "TRAC", "Stop structure element index for optics calculation.")),
+            ("numlcp", Variable(1000, "TRAC", "Checkpoint/restart version: How often to write checkpointing files.")),
             ("idy1", Variable(1, "TRAC", "Switch for turning horiz. coupling on/off")),
-            (
-                "idy2",
-                Variable(1, "TRAC", "Switch for turning vertical coupling on/off"),
-            ),
-            (
-                "idfor",
-                Variable(
-                    0, "TRAC", "Switch to add closed orbit to initial coordinates"
-                ),
-            ),
+            ("idy2", Variable(1, "TRAC", "Switch for turning vertical coupling on/off")),
+            ("idfor", Variable(0, "TRAC", "Switch to add closed orbit to initial coordinates")),
             ("irew", Variable(1, "TRAC", "Switch to save all or some tracking data")),
-            (
-                "iclo6",
-                Variable(
-                    2, "TRAC", "Switch to calculate 6D closed orbit using DA-package"
-                ),
-            ),
+            ("iclo6", Variable(2, "TRAC", "Switch to calculate 6D closed orbit using DA-package")),
             ("nde1", Variable(0, "TRAC", "Number of turns at flat bottom")),
             ("nde2", Variable(0, "TRAC", "Number of turns for the energy ramping")),
-            (
-                "nwr1",
-                Variable(1, "TRAC", "Coordinate writing interval during flat bottom"),
-            ),
+            ("nwr1",Variable(1, "TRAC", "Coordinate writing interval during flat bottom")),
             ("nwr2", Variable(1, "TRAC", "Coordinate writing interval during ramp")),
-            (
-                "nwr3",
-                Variable(1, "TRAC", "Coordinate writing interval during flat top"),
-            ),
+            ("nwr3", Variable(1, "TRAC", "Coordinate writing interval during flat top")),
             ("nwr4", Variable(1, "TRAC", "Coordinate writing interval in fort.6")),
             ("ntwin", Variable(2, "TRAC", "For analysis of Lyapunov exponent")),
-            (
-                "ibidu",
-                Variable(
-                    1, "TRAC", "Switch to create or read binary dump of accelerator"
-                ),
-            ),
+            ("ibidu", Variable(1, "TRAC", "Switch to create or read binary dump of accelerator")),
             ("iexact", Variable(0, "TRAC", "Switch to use exact drift tracking")),
+            ("curveff", Variable(0, "TRAC", "Switch to enable the curvature effect in a combined function magnet (bending + quadrupole).")),
         ]
     )
 
@@ -398,6 +303,8 @@ class SixInput(object):
     def __init__(self, basedir="."):
         self.basedir = basedir
         self.filenames = {}
+        # The SIMU block is incompatible with some TRAC settings
+        self.simu_block_set = False
 
         # Prepare list of filenames
         for n in [2, 3, 8, 16]:
@@ -720,6 +627,8 @@ class SixInput(object):
                     currline = next(f3).strip()
                 while not currline.startswith("NEXT"):
                     self.initialconditions.append(myfloat(currline))
+                    if len(initialconditions) > 12:
+                        self.e0 = self.initialconditions[12]
                     currline = next(f3).strip()
 
             elif currline.startswith("ITER"):
@@ -971,6 +880,68 @@ class SixInput(object):
                 if not currline.startswith("NEXT"):
                     self.sear_name = currline.split()
 
+            elif currline.startswith("SIMU"):
+                self.simu_block_set = True
+                # The following TRAC variables are automatically set by SIMU:
+                self.amp1 = 0
+                self.amp0 = 0
+                self.idy1 = 1
+                self.idy2 = 1
+                self.idfor = 1
+                self.ntwin = 2
+                currline = next(f3)
+                while not currline.startswith("NEXT"):
+                    linesplit = currline.split()
+                    if currline.startswith("PARTICLES"):
+                        self.napx = int(linesplit[1])
+                    elif currline.startswith("TURNS"):
+                        self.numl = int(linesplit[1])
+                        if len(linesplit) > 2:
+                            self.numlr = int(linesplit[2])
+                    if currline.startswith("CRPOINT"):
+                        self.numlcp = int(linesplit[1])
+                    elif currline.startswith("REF_ENERGY"):
+                        self.e0 = myfloat(linesplit[1])
+                    elif currline.startswith("REF_PARTICLE"):
+                        if isinstance(linesplit[1],str) and linesplit[1].upper() == "PROTON":
+                            self.m0c2 = self.m0c2.default
+                        else:
+                            self.m0c2 = myfloat(linesplit[1])
+                        if len(linesplit) > 2:
+                            self.q0 = int(linesplit[2])
+                        if len(linesplit) > 3:
+                            self.a0 = int(linesplit[3])
+                        if len(linesplit) > 4:
+                            self.z0 = int(linesplit[4])
+                    elif currline.startswith("OPTICS"):
+                        self.niu1 = int(linesplit[1])
+                        self.niu2 = int(linesplit[2])
+                    elif currline.startswith("6D_CLORB"):
+                        if linesplit[1].upper() == "ON":
+                            self.iclo6 = 1
+                        else:
+                            self.iclo6 = 0
+                    elif currline.startswith("WRITE_TRACKS"):
+                        self.nwr1 = int(linesplit[1])
+                        self.nwr2 = int(linesplit[1])
+                        self.nwr3 = int(linesplit[1])
+                        if len(linesplit) > 2:
+                            if linesplit[2].upper() == "ON":
+                                self.irew = 1
+                            else:
+                                self.irew = 0
+                    elif currline.startswith("EXACT"):
+                        if linesplit[1].upper() == "ON":
+                            self.iexact = 1
+                        else:
+                            self.iexact = 0
+                    elif currline.startswith("CURVEFF"):
+                        if linesplit[1].upper() == "ON":
+                            self.curveff = 1
+                        else:
+                            self.curveff = 0
+                    currline = next(f3)
+
             elif currline.startswith("SUBR"):
                 currline = next(f3)
                 if not currline.startswith("NEXT"):
@@ -1014,6 +985,12 @@ class SixInput(object):
                     self.amp0 = myfloat(linesplit[4])
                     self.ird = int(linesplit[5])
                     self.imc = int(linesplit[6])
+                    self.niu1 = int(linesplit[7])
+                    self.niu2 = int(linesplit[8])
+                    self.numlcp = int(linesplit[9])
+                    if self.simu_block_set:
+                        self.amp1 = 0
+                        self.amp0 = 0
                     currline = next(f3).strip()
                 if not currline.startswith("NEXT"):
                     linesplit = currline.split()
@@ -1022,10 +999,16 @@ class SixInput(object):
                     self.idfor = int(linesplit[2])
                     self.irew = int(linesplit[3])
                     self.iclo6 = int(linesplit[4])
+                    if self.simu_block_set:
+                        self.idy1 = 1
+                        self.idy2 = 1
+                        self.idfor = 1
                     currline = next(f3).strip()
                 if not currline.startswith("NEXT"):
-                    vvv = "nde1 nde2 nwr1 nwr2 nwr3 nwr4 ntwin ibidu iexact"
+                    vvv = "nde1 nde2 nwr1 nwr2 nwr3 nwr4 ntwin ibidu iexact curveff"
                     self.var_from_line(currline, vvv)
+                    if self.simu_block_set:
+                        self.ntwin = 2
 
             elif currline.startswith("TUNE"):
                 currline = next(f3)
