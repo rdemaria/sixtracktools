@@ -627,7 +627,7 @@ class SixInput(object):
                     currline = next(f3).strip()
                 while not currline.startswith("NEXT"):
                     self.initialconditions.append(myfloat(currline))
-                    if len(initialconditions) > 12:
+                    if len(self.initialconditions) > 12:
                         self.e0 = self.initialconditions[12]
                     currline = next(f3).strip()
 
@@ -985,9 +985,10 @@ class SixInput(object):
                     self.amp0 = myfloat(linesplit[4])
                     self.ird = int(linesplit[5])
                     self.imc = int(linesplit[6])
-                    self.niu1 = int(linesplit[7])
-                    self.niu2 = int(linesplit[8])
-                    self.numlcp = int(linesplit[9])
+                    if len(linesplit) > 7:
+                        self.niu1 = int(linesplit[7])
+                        self.niu2 = int(linesplit[8])
+                        self.numlcp = int(linesplit[9])
                     if self.simu_block_set:
                         self.amp1 = 0
                         self.amp0 = 0
