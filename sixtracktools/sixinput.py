@@ -8,6 +8,8 @@ from collections import OrderedDict, namedtuple
 from math import factorial
 import numpy as np
 
+from .xline_generation import _expand_struct
+
 clight = 299792458
 pi = np.pi
 
@@ -1183,6 +1185,28 @@ class SixInput(object):
                     yield ell
             else:
                 yield el
+
+    def generate_xtrack_line(self, classes=()):
+
+        import xtrack as xt
+        from xtrack.line import mk_class_namespace
+
+        class_dict=mk_class_namespace(classes)
+
+        line_data, rest, iconv = _expand_struct(self, convert=class_dict)
+
+        ele_names = [dd[0] for dd in line_data]
+        elements = [dd[2] for dd in line_data]
+
+        line = xt.Line(elements=elements, element_names=ele_names)
+
+        other_info = {}
+        other_info["rest"] = rest
+        other_info["iconv"] = iconv
+
+        line.other_info = other_info
+
+        return line
 
 
 if __name__ == "__main__":
