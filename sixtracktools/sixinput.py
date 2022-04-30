@@ -7,12 +7,14 @@ import gzip
 from collections import OrderedDict, namedtuple
 from math import factorial
 import numpy as np
+import logging
 
 from .xline_generation import _expand_struct
 
 clight = 299792458
 pi = np.pi
 
+log=logging.getLogger(__name__)
 
 BeamBeam6D = namedtuple(
     "BeamBeam6D",
@@ -1191,6 +1193,9 @@ class SixInput(object):
         import xtrack as xt
         from xtrack.line import mk_class_namespace
 
+        log.warning("\n"
+            "Note that the generation of xtrack lines from sixtrack input is used\n"
+            "mainly for testing and is non guaranteed to work for any sixtrack input.\n")
         class_dict=mk_class_namespace(classes)
 
         line_data, rest, iconv = _expand_struct(self, convert=class_dict)
