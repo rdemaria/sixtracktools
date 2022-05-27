@@ -137,7 +137,6 @@ class SixDump101Abs(object):
     ptau = property(lambda p: (p.energy-p.energy0)/p.p0c)
     psigma = property(lambda p: p.ptau/p.beta0)
     tau = property(lambda p: p.sigma*p.beta0)
-    zeta = property(lambda p: p.sigma*p.rvv)
     mass = property(lambda p: p.mass0)
     charge = property(lambda p: 1)
     charge0 = property(lambda p: 1)
@@ -150,6 +149,10 @@ class SixDump101Abs(object):
     gamma = property(lambda p: p.energy/p.mass)
     beta = property(lambda p: p.pc/p.energy)
     mass0 = property(lambda p: np.sqrt(p.energy0**2-p.p0c**2))
+
+    @property
+    def zeta(self):
+        raise ValueError('Not anymore supported, use tau')
 
     def __getattr__(self, k):
         return self.particles[k]
@@ -172,7 +175,7 @@ class SixDump101Abs(object):
     def get_minimal_beam(self):
         out = {}
         names = 'partid elemid turn state'.split()
-        names += 's x px y py zeta delta'.split()
+        names += 's x px y py tau delta'.split()
         names += 'mass0 p0c'.split()
         for name in names:
             out[name] = getattr(self, name)
