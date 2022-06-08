@@ -592,7 +592,8 @@ class SixInput(object):
                     self.diff_nvar = int(linesplit[1])
                     self.diff_preda = myfloat(linesplit[2])
                     self.diff_nsix = int(linesplit[3])
-                    self.diff_ncor = int(linesplit[4])
+                    if len(linesplit) > 4:
+                        self.diff_ncor = int(linesplit[4])
                     currline = next(f3)
                 if not currline.startswith("NEXT"):
                     if self.diff_ncor != len(currline.split()):
