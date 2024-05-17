@@ -71,10 +71,9 @@ delta    1d DeltaP/P0
 energy   1d Energy (Mev)
 """
 
-_open=open
 
-def open(fn):
-    fh = _open(fn, 'rb')
+def readfile(fn):
+    fh = open(fn, 'rb')
     header = _read(fh, fmt_head)
     partfirst = header['partfirst']
     partlast = header['partlast']
@@ -95,26 +94,9 @@ def open(fn):
     return header, part
 
 
-def opendir(basedir='.'):
-    fn = os.path.join(basedir, 'fort.90')
-    head, part = open(fn)
-#  for lbl,obj in head.items():
-#    print "%-8s <%s>"%(lbl, obj)
-    npart = head['parttot']
-    for i in range(1, npart/2):
-        fn = os.path.join(basedir, 'fort.%d' % (90-i))
-        nhead, ndata = open(fn)
-    #  for lbl,obj in nhead.items():
-    #    print "%-8s <%s>"%(lbl, obj)
-        part.update(ndata)
-#  for i in sorted(part.keys()):
-#    print "part %d turns %d"%(i,len(part[i]))
-    return head, part
-
-
 class SixBin(object):
-    def __init__(self, basedir):
-        self.head, self.part = opendir(basedir)
+    def __init__(self, filename="singletrackfile.dat"):
+        self.head, self.part = readfile(filename)
 
     def get_particle(self, part, row, m0=938272046.):
         pdist, x, xp, y, yp, sigma, delta, energy = self.part[part][row].T
