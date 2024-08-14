@@ -77,21 +77,24 @@ def readfile(fn):
     header = _read(fh, fmt_head)
     partfirst = header['partfirst']
     partlast = header['partlast']
-    part = {}
-    for i in range(partfirst, partlast+1):
-        part[i] = []
+    parttot =  header['parttot']
+    headers = [header]
+    for n in range(1,parttot//2):
+        headers.append(_read(fh, fmt_head))
+    part = []
+    for i in range(parttot):
+        part.append([])
     while fh.read(4) != b'':  # read(fh,'headpart 1I ...')
         turnnum = struct.unpack('I', fh.read(4))
         # read(fh,fmt_part)
         # read(fh,fmt_part)
         for i in range(partfirst, partlast+1):
             pnum1 = struct.unpack('I', fh.read(4))
+            idx = pnum1[0]-1
             orb1 = struct.unpack('8d', fh.read(64))
-            part[i].append(list(orb1))
+            part[idx].append(pnum1+orb1)
         fh.read(4)  # read(fh,'headpart 1I ...')
-    for i in range(partfirst, partlast+1):
-        part[i] = np.array(part[i])
-    return header, part
+    return header, np.array(part)
 
 
 class SixBin(object):
