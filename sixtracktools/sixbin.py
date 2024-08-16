@@ -14,6 +14,8 @@
 import struct
 import os
 import numpy as np
+import matplotlib.pyplot as plt
+
 
 
 def _read(fh, fmt):
@@ -81,9 +83,9 @@ def readfile(fn):
     headers = [header]
     for n in range(1,parttot//2):
         headers.append(_read(fh, fmt_head))
-    part = []
-    for i in range(parttot):
-        part.append([])
+    part = {}
+    for ii in range(parttot):
+        part[ii]=[]
     while fh.read(4) != b'':  # read(fh,'headpart 1I ...')
         turnnum = struct.unpack('I', fh.read(4))
         # read(fh,fmt_part)
@@ -94,12 +96,53 @@ def readfile(fn):
             orb1 = struct.unpack('8d', fh.read(64))
             part[idx].append(pnum1+orb1)
         fh.read(4)  # read(fh,'headpart 1I ...')
-    return header, np.array(part)
+    part={ii: np.array(pp) for ii,pp in part.items()}
+    return header, part
 
 
 class SixBin(object):
     def __init__(self, filename="singletrackfile.dat"):
         self.head, self.part = readfile(filename)
+
+    def show(self):
+        plt.show()
+
+    def plot_lossturns(self):
+        ii,nt=np.array([ (ii,len(pp)) for ii,pp in self.part.items() ]).T
+        plt.figure(num="LossTurns")
+        plt.plot(ii,nt)
+        plt.xlabel("Particle index")
+        plt.ylabel("Number of turns")
+
+    def plot_phasespace(self,ii):
+        pp=self.part[ii]
+        x=pp[:,2]
+        px=pp[:,3]
+        y=pp[:,4]
+        py=pp[:,5]
+        sig=pp[:,6]
+        delta=pp[:,7]
+
+        fig,axs=plt.subplots(2,2,num=f"Particle {ii}")
+        plt.suptitle(f"Particle {ii}")
+        axs[0,0].plot(x,px,'.')
+        axs[0,0].set_xlabel("x")
+        axs[0,0].set_ylabel("px")
+
+        axs[0,1].plot(y,py,'.')
+        axs[0,1].set_xlabel("y")
+        axs[0,1].set_ylabel("py")
+
+        axs[1,0].plot(sig,delta,'.')
+        axs[1,0].set_xlabel("sig")
+        axs[1,0].set_ylabel("delta")
+
+        axs[1,1].plot(delta,x,'.',label='x')
+        axs[1,1].plot(delta,y,'.',label='y')
+        axs[1,1].set_xlabel("delta")
+        axs[1,1].set_ylabel("xy")
+        axs[1,1].legend()
+
 
     def get_particle(self, part, row, m0=938272046.):
         pdist, x, xp, y, yp, sigma, delta, energy = self.part[part][row].T
